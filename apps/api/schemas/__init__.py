@@ -18,12 +18,32 @@ from schemas.caso import (
     CasoUpdate,
 )
 from schemas.cliente import ClienteCreate, ClienteResponse, ClienteUpdate
+from schemas.eipd import (
+    EIPDAprobacionRequest,
+    EIPDCreate,
+    EIPDReporteOficialResponse,
+    EIPDResponse,
+    EIPDUpdate,
+)
 from schemas.expediente import (
     ExpedienteCreate,
     ExpedienteResponse,
     ExpedienteUpdate,
 )
+from schemas.medida_seguridad import (
+    MedidaSeguridadCreate,
+    MedidaSeguridadResponse,
+    MedidaSeguridadUpdate,
+)
 from schemas.proceso import ProcesoCreate, ProcesoResponse, ProcesoUpdate
+from schemas.riesgo import (
+    MatrizCalorCelda,
+    MatrizCalorResponse,
+    RiesgoCreate,
+    RiesgoMitigacionRequest,
+    RiesgoResponse,
+    RiesgoUpdate,
+)
 from schemas.tenant import TenantCreate, TenantResponse, TenantUpdate
 from schemas.usuario import (
     PasswordChangeRequest,
@@ -59,4 +79,18 @@ __all__ = [
     "ExpedienteCreate",
     "ExpedienteUpdate",
     "ExpedienteResponse",
+    "MedidaSeguridadCreate",
+    "MedidaSeguridadUpdate",
+    "MedidaSeguridadResponse",
+    "RiesgoCreate",
+    "RiesgoUpdate",
+    "RiesgoMitigacionRequest",
+    "RiesgoResponse",
+    "MatrizCalorCelda",
+    "MatrizCalorResponse",
+    "EIPDCreate",
+    "EIPDUpdate",
+    "EIPDAprobacionRequest",
+    "EIPDResponse",
+    "EIPDReporteOficialResponse",
 ]

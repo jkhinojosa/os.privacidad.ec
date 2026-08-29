@@ -87,6 +87,24 @@ async def generate_next_codigo(
             Expediente.tenant_id == tenant_id,
             Expediente.codigo.like(f"{year_prefix}%"),
         )
+    elif prefix == "MED":
+        from models.medida_seguridad import MedidaSeguridad
+        stmt = select(func.count(MedidaSeguridad.id)).where(
+            MedidaSeguridad.tenant_id == tenant_id,
+            MedidaSeguridad.codigo.like(f"{year_prefix}%"),
+        )
+    elif prefix == "RSK":
+        from models.riesgo import Riesgo
+        stmt = select(func.count(Riesgo.id)).where(
+            Riesgo.tenant_id == tenant_id,
+            Riesgo.codigo.like(f"{year_prefix}%"),
+        )
+    elif prefix == "EIPD":
+        from models.eipd import EvaluacionImpacto
+        stmt = select(func.count(EvaluacionImpacto.id)).where(
+            EvaluacionImpacto.tenant_id == tenant_id,
+            EvaluacionImpacto.codigo.like(f"{year_prefix}%"),
+        )
     else:
         raise ValueError(f"Prefijo no soportado: {prefix}")
 

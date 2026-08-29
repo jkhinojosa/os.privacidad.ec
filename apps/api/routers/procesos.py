@@ -1,7 +1,8 @@
 """
-OS Privacidad — Router de Procesos (Registro de Actividades de Tratamiento)
-===========================================================================
-Endpoints CRUD para actividades de tratamiento (RAT) conforme a la LOPDP.
+OS Privacidad — Router de Procesos (Registro de Actividades de Tratamiento - RAT)
+================================================================================
+Endpoints CRUD para actividades de tratamiento (RAT) conforme a la LOPDP y MTGE.
+Calcula automáticamente el puntaje MTGE y determina si requiere EIPD previa.
 """
 
 from __future__ import annotations
@@ -13,6 +14,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.deps import get_tenant_db, log_audit, require_role
+from core.risk_engine import calcular_puntaje_mtge, evaluar_obligatoriedad_eipd
 from models.proceso import Proceso
 from models.usuario import UserRole, Usuario
 from schemas.proceso import ProcesoCreate, ProcesoResponse, ProcesoUpdate
@@ -23,6 +25,7 @@ router = APIRouter(prefix="/procesos", tags=["Procesos (RAT)"])
 @router.get("", response_model=list[ProcesoResponse])
 async def list_procesos(
     cliente_id: uuid.UUID | None = Query(None, description="Filtrar por empresa cliente"),
+    requiere_eipd: bool | None = Query(None, description="Filtrar por obligatoriedad de EIPD"),
     db: AsyncSession = Depends(get_tenant_db),
     current_user: Usuario = Depends(
         require_role(
@@ -35,7 +38,7 @@ async def list_procesos(
     ),
 ) -> list[ProcesoResponse]:
     """
-    Lista las actividades de tratamiento del tenant (RLS + filtro opcional).
+    Lista las actividades de tratamiento del tenant (RLS + filtros opcionales).
     """
     stmt = select(Proceso).where(Proceso.activo.is_(True))
     if current_user.rol != UserRole.super_admin and current_user.tenant_id:
@@ -43,6 +46,8 @@ async def list_procesos(
 
     if cliente_id:
         stmt = stmt.where(Proceso.cliente_id == cliente_id)
+    if requiere_eipd is not None:
+        stmt = stmt.where(Proceso.requiere_eipd == requiere_eipd)
 
     stmt = stmt.order_by(Proceso.nombre.asc())
     result = await db.execute(stmt)
@@ -60,17 +65,30 @@ async def create_proceso(
     ),
 ) -> ProcesoResponse:
     """
-    Registra una nueva actividad de tratamiento de datos personales en el tenant.
+    Registra una nueva actividad de tratamiento RAT en el tenant.
+    Calcula automáticamente el puntaje MTGE y evalúa la obligatoriedad de EIPD.
     """
     if not current_user.tenant_id and current_user.rol != UserRole.super_admin:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail={
-                "error": {"code": "NO_TENANT", "message": "Usuario no pertenece a un tenant válido"}
-            },
+            detail={"error": {"code": "NO_TENANT", "message": "Usuario no pertenece a un tenant válido"}},
         )
 
     tenant_id = current_user.tenant_id
+
+    # ── Cálculo MTGE y Evaluación de EIPD Obligatoria ─────────
+    puntaje_mtge = calcular_puntaje_mtge(
+        volumen_titulares=payload.volumen_titulares_estimado,
+        frecuencia=payload.frecuencia_tratamiento.value,
+        tipo_datos=payload.tipo_datos,
+        tiene_perfiles=payload.tiene_perfiles,
+        transferencia_internacional=payload.transferencia_internacional,
+    )
+    req_eipd, _ = evaluar_obligatoriedad_eipd(
+        puntaje_mtge=puntaje_mtge,
+        tipo_datos=payload.tipo_datos,
+        tiene_perfiles=payload.tiene_perfiles,
+    )
 
     proceso = Proceso(
         tenant_id=tenant_id,
@@ -81,6 +99,18 @@ async def create_proceso(
         base_legal=payload.base_legal,
         finalidad=payload.finalidad,
         tipo_datos=payload.tipo_datos,
+        destinatarios=payload.destinatarios,
+        colectivos_titulares=payload.colectivos_titulares,
+        tiene_perfiles=payload.tiene_perfiles,
+        transferencia_internacional=payload.transferencia_internacional,
+        paises_transferencia=payload.paises_transferencia,
+        garantias_transferencia=payload.garantias_transferencia,
+        plazo_conservacion=payload.plazo_conservacion,
+        frecuencia_tratamiento=payload.frecuencia_tratamiento.value,
+        permanencia_tratamiento=payload.permanencia_tratamiento,
+        volumen_titulares_estimado=payload.volumen_titulares_estimado,
+        puntaje_mtge=puntaje_mtge,
+        requiere_eipd=req_eipd,
         created_by=current_user.id,
     )
     db.add(proceso)
@@ -93,7 +123,12 @@ async def create_proceso(
         entidad="proceso",
         entidad_id=proceso.id,
         usuario=current_user,
-        detalles={"nombre": proceso.nombre, "base_legal": proceso.base_legal},
+        detalles={
+            "nombre": proceso.nombre,
+            "base_legal": proceso.base_legal,
+            "puntaje_mtge": puntaje_mtge,
+            "requiere_eipd": req_eipd,
+        },
         request=request,
     )
     await db.commit()
@@ -117,7 +152,7 @@ async def get_proceso(
     ),
 ) -> ProcesoResponse:
     """
-    Obtiene los detalles de un proceso por ID.
+    Obtiene los detalles de un proceso RAT por ID.
     """
     stmt = select(Proceso).where(Proceso.id == proceso_id)
     if current_user.rol != UserRole.super_admin and current_user.tenant_id:
@@ -129,12 +164,7 @@ async def get_proceso(
     if not proceso:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail={
-                "error": {
-                    "code": "PROCESO_NOT_FOUND",
-                    "message": "Actividad de tratamiento no encontrada",
-                }
-            },
+            detail={"error": {"code": "PROCESO_NOT_FOUND", "message": "Actividad de tratamiento no encontrada"}},
         )
 
     return ProcesoResponse.model_validate(proceso)
@@ -151,7 +181,7 @@ async def update_proceso(
     ),
 ) -> ProcesoResponse:
     """
-    Actualiza la información de un proceso.
+    Actualiza la información de un proceso RAT y recalcula el puntaje MTGE.
     """
     stmt = select(Proceso).where(Proceso.id == proceso_id)
     if current_user.rol != UserRole.super_admin and current_user.tenant_id:
@@ -163,18 +193,30 @@ async def update_proceso(
     if not proceso:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail={
-                "error": {
-                    "code": "PROCESO_NOT_FOUND",
-                    "message": "Actividad de tratamiento no encontrada",
-                }
-            },
+            detail={"error": {"code": "PROCESO_NOT_FOUND", "message": "Actividad de tratamiento no encontrada"}},
         )
 
     update_data = payload.model_dump(exclude_unset=True)
+    if "frecuencia_tratamiento" in update_data and update_data["frecuencia_tratamiento"]:
+        update_data["frecuencia_tratamiento"] = update_data["frecuencia_tratamiento"].value
+
     for field, value in update_data.items():
         setattr(proceso, field, value)
 
+    # Recalcular MTGE y EIPD
+    proceso.puntaje_mtge = calcular_puntaje_mtge(
+        volumen_titulares=proceso.volumen_titulares_estimado,
+        frecuencia=proceso.frecuencia_tratamiento,
+        tipo_datos=proceso.tipo_datos,
+        tiene_perfiles=proceso.tiene_perfiles,
+        transferencia_internacional=proceso.transferencia_internacional,
+    )
+    req_eipd, _ = evaluar_obligatoriedad_eipd(
+        puntaje_mtge=proceso.puntaje_mtge,
+        tipo_datos=proceso.tipo_datos,
+        tiene_perfiles=proceso.tiene_perfiles,
+    )
+    proceso.requiere_eipd = req_eipd
     proceso.updated_by = current_user.id
 
     await log_audit(
@@ -214,12 +256,7 @@ async def delete_proceso(
     if not proceso:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail={
-                "error": {
-                    "code": "PROCESO_NOT_FOUND",
-                    "message": "Actividad de tratamiento no encontrada",
-                }
-            },
+            detail={"error": {"code": "PROCESO_NOT_FOUND", "message": "Actividad de tratamiento no encontrada"}},
         )
 
     proceso.activo = False

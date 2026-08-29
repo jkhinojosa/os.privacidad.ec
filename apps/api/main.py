@@ -95,9 +95,12 @@ def _register_routers(app: FastAPI) -> None:
     from routers.auth import router as auth_router
     from routers.casos import router as casos_router
     from routers.clientes import router as clientes_router
+    from routers.eipds import router as eipds_router
     from routers.expedientes import router as expedientes_router
     from routers.health import router as health_router
+    from routers.medidas_seguridad import router as medidas_seguridad_router
     from routers.procesos import router as procesos_router
+    from routers.riesgos import router as riesgos_router
     from routers.tenants import router as tenants_router
     from routers.usuarios import router as usuarios_router
 
@@ -109,6 +112,9 @@ def _register_routers(app: FastAPI) -> None:
     app.include_router(procesos_router, prefix="/api/v1")
     app.include_router(casos_router, prefix="/api/v1")
     app.include_router(expedientes_router, prefix="/api/v1")
+    app.include_router(medidas_seguridad_router, prefix="/api/v1")
+    app.include_router(riesgos_router, prefix="/api/v1")
+    app.include_router(eipds_router, prefix="/api/v1")
 
 
 # Instancia global para uvicorn
