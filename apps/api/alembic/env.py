@@ -8,9 +8,10 @@ Importa Base.metadata para autogenerate.
 import asyncio
 from logging.config import fileConfig
 
-from alembic import context
 from sqlalchemy import pool
 from sqlalchemy.ext.asyncio import async_engine_from_config
+
+from alembic import context
 
 # ── Cargar config de Alembic ─────────────────────────────────
 config = context.config
@@ -18,8 +19,7 @@ if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
 # ── Importar metadata de todos los modelos ───────────────────
-# Cada modelo debe importarse aquí para que Alembic lo detecte
-# en autogenerate. Agregar imports conforme se crean modelos.
+import models  # noqa: F401, E402
 from db.base import Base  # noqa: E402
 
 target_metadata = Base.metadata

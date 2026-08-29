@@ -17,8 +17,9 @@ from core.config import settings
 async def lifespan(app: FastAPI):
     """Gestiona el ciclo de vida de la aplicación (startup/shutdown)."""
     # ── Startup ──────────────────────────────────────────────
-    from db.session import engine
     from redis.asyncio import Redis
+
+    from db.session import engine
 
     # Verificar conexión a PostgreSQL
     async with engine.begin() as conn:
@@ -58,6 +59,33 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
 
+    # ── Exception Handlers (Standard Error Format) ────────────
+    from fastapi.exceptions import RequestValidationError
+    from fastapi.responses import JSONResponse
+    from starlette.exceptions import HTTPException as StarletteHTTPException
+
+    @app.exception_handler(StarletteHTTPException)
+    async def http_exception_handler(request, exc):
+        if isinstance(exc.detail, dict) and "error" in exc.detail:
+            return JSONResponse(status_code=exc.status_code, content=exc.detail)
+        return JSONResponse(
+            status_code=exc.status_code,
+            content={"error": {"code": "HTTP_ERROR", "message": str(exc.detail)}},
+        )
+
+    @app.exception_handler(RequestValidationError)
+    async def validation_exception_handler(request, exc):
+        return JSONResponse(
+            status_code=422,
+            content={
+                "error": {
+                    "code": "VALIDATION_ERROR",
+                    "message": "Datos de entrada inválidos",
+                    "details": exc.errors(),
+                }
+            },
+        )
+
     # ── Routers ──────────────────────────────────────────────
     _register_routers(app)
 
@@ -66,9 +94,17 @@ def create_app() -> FastAPI:
 
 def _register_routers(app: FastAPI) -> None:
     """Registra todos los routers de la API."""
+    from routers.auth import router as auth_router
+    from routers.clientes import router as clientes_router
     from routers.health import router as health_router
+    from routers.tenants import router as tenants_router
+    from routers.usuarios import router as usuarios_router
 
     app.include_router(health_router, prefix="/api/v1")
+    app.include_router(auth_router, prefix="/api/v1")
+    app.include_router(tenants_router, prefix="/api/v1")
+    app.include_router(clientes_router, prefix="/api/v1")
+    app.include_router(usuarios_router, prefix="/api/v1")
 
 
 # Instancia global para uvicorn

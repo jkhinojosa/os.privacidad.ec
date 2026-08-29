@@ -8,7 +8,6 @@ con validación de tipos y valores por defecto seguros.
 from __future__ import annotations
 
 import json
-from typing import Any
 
 from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict

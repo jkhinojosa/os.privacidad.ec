@@ -14,17 +14,26 @@ from sqlalchemy.ext.asyncio import (
     async_sessionmaker,
     create_async_engine,
 )
+from sqlalchemy.pool import NullPool
 
 from core.config import settings
 
 # ── Engine ───────────────────────────────────────────────────
+engine_kwargs = {
+    "echo": settings.is_development,
+    "pool_pre_ping": True,
+}
+
+if settings.API_ENV == "testing":
+    engine_kwargs["poolclass"] = NullPool
+else:
+    engine_kwargs["pool_size"] = 20
+    engine_kwargs["max_overflow"] = 10
+    engine_kwargs["pool_recycle"] = 3600
+
 engine = create_async_engine(
     settings.DATABASE_URL,
-    echo=settings.is_development,  # SQL logging solo en dev
-    pool_size=20,
-    max_overflow=10,
-    pool_pre_ping=True,            # Detecta conexiones rotas
-    pool_recycle=3600,             # Recicla conexiones cada hora
+    **engine_kwargs,
 )
 
 # ── Session Factory ──────────────────────────────────────────
@@ -33,6 +42,7 @@ async_session_factory = async_sessionmaker(
     class_=AsyncSession,
     expire_on_commit=False,
 )
+async_session_maker = async_session_factory
 
 
 # ── Dependency Injection ─────────────────────────────────────

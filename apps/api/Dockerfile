@@ -16,8 +16,8 @@ WORKDIR /app
 # Copiar archivos de proyecto
 COPY pyproject.toml ./
 
-# Instalar todas las dependencias (incluye dev)
-RUN uv sync --no-install-project
+# Instalar todas las dependencias (incluye dev: pytest, ruff)
+RUN uv sync --extra dev --no-install-project
 
 ENV PATH="/app/.venv/bin:$PATH"
 ENV PYTHONPATH="/app"
