@@ -1,0 +1,58 @@
+# ==========================
+# OS Privacidad — .gitignore
+# ==========================
+
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+*.egg
+dist/
+build/
+.eggs/
+*.so
+.venv/
+venv/
+env/
+.uv/
+
+# ---- Node.js ----
+node_modules/
+.next/
+out/
+.turbo/
+*.tsbuildinfo
+
+# ---- Environment ----
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# ---- IDE ----
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# ---- Docker ----
+docker-compose.override.local.yml
+
+# ---- Testing ----
+.coverage
+htmlcov/
+.pytest_cache/
+coverage/
+
+# ---- Alembic ----
+# No ignorar migraciones — van al repo
+
+# ---- Logs ----
+*.log
+logs/
+
+# ---- Build ----
+*.pyc

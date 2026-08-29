@@ -1,0 +1,11 @@
+{
+  "name": "@os-privacidad/shared-types",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Tipos TypeScript compartidos generados desde OpenAPI (OS Privacidad)",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "scripts": {
+    "generate": "echo 'TODO: Generar tipos desde OpenAPI schema en Fase 1'"
+  }
+}
