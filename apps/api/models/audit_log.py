@@ -25,6 +25,7 @@ class AuditLog(Base):
     """
     Bitácora de auditoría inmutable de todas las acciones críticas en la plataforma.
     """
+
     __tablename__ = "audit_logs"
 
     id: Mapped[uuid.UUID] = mapped_column(

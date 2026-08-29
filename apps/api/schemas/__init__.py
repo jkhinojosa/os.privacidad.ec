@@ -11,7 +11,19 @@ from schemas.auth import (
     TokenResponse,
     UserProfileResponse,
 )
+from schemas.caso import (
+    CasoCreate,
+    CasoResponse,
+    CasoTransitionRequest,
+    CasoUpdate,
+)
 from schemas.cliente import ClienteCreate, ClienteResponse, ClienteUpdate
+from schemas.expediente import (
+    ExpedienteCreate,
+    ExpedienteResponse,
+    ExpedienteUpdate,
+)
+from schemas.proceso import ProcesoCreate, ProcesoResponse, ProcesoUpdate
 from schemas.tenant import TenantCreate, TenantResponse, TenantUpdate
 from schemas.usuario import (
     PasswordChangeRequest,
@@ -37,4 +49,14 @@ __all__ = [
     "UsuarioResponse",
     "PasswordChangeRequest",
     "AuditLogResponse",
+    "ProcesoCreate",
+    "ProcesoUpdate",
+    "ProcesoResponse",
+    "CasoCreate",
+    "CasoUpdate",
+    "CasoTransitionRequest",
+    "CasoResponse",
+    "ExpedienteCreate",
+    "ExpedienteUpdate",
+    "ExpedienteResponse",
 ]

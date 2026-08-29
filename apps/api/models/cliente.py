@@ -26,10 +26,9 @@ class Cliente(Base, TimestampMixin):
     Representa una empresa o cliente gestionado dentro del Tenant.
     Posee constraint único de (tenant_id, ruc).
     """
+
     __tablename__ = "clientes"
-    __table_args__ = (
-        UniqueConstraint("tenant_id", "ruc", name="uq_clientes_tenant_ruc"),
-    )
+    __table_args__ = (UniqueConstraint("tenant_id", "ruc", name="uq_clientes_tenant_ruc"),)
 
     tenant_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),

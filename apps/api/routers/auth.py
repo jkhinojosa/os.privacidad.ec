@@ -125,7 +125,9 @@ async def refresh_session(
     if not token_str:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail={"error": {"code": "NO_REFRESH_TOKEN", "message": "Refresh token no proporcionado"}},
+            detail={
+                "error": {"code": "NO_REFRESH_TOKEN", "message": "Refresh token no proporcionado"}
+            },
         )
 
     try:
@@ -137,13 +139,23 @@ async def refresh_session(
         if not user_id_str or not jti or token_type != "refresh":
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail={"error": {"code": "INVALID_REFRESH_TOKEN", "message": "Token de refresco inválido"}},
+                detail={
+                    "error": {
+                        "code": "INVALID_REFRESH_TOKEN",
+                        "message": "Token de refresco inválido",
+                    }
+                },
             )
         user_id = uuid.UUID(user_id_str)
     except (JWTError, ValueError):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail={"error": {"code": "INVALID_REFRESH_TOKEN", "message": "Token de refresco inválido o expirado"}},
+            detail={
+                "error": {
+                    "code": "INVALID_REFRESH_TOKEN",
+                    "message": "Token de refresco inválido o expirado",
+                }
+            },
         ) from None
 
     # Verificar validez en Redis
@@ -164,7 +176,9 @@ async def refresh_session(
     if not user or not user.activo:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail={"error": {"code": "USER_INACTIVE", "message": "Usuario no encontrado o inactivo"}},
+            detail={
+                "error": {"code": "USER_INACTIVE", "message": "Usuario no encontrado o inactivo"}
+            },
         )
 
     # Emitir nuevo access token y nuevo refresh token

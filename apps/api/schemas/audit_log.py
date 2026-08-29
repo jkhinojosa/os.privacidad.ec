@@ -15,6 +15,7 @@ from pydantic import BaseModel, ConfigDict
 
 class AuditLogResponse(BaseModel):
     """Respuesta con registro de auditoría."""
+
     model_config = ConfigDict(from_attributes=True)
 
     id: uuid.UUID

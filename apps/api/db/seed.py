@@ -1,7 +1,7 @@
 """
 OS Privacidad — Script de Sembrado de Datos Iniciales (Seed)
 =============================================================
-Crea organizaciones demo, usuarios iniciales con diferentes roles y un cliente de prueba.
+Crea organizaciones demo, usuarios iniciales, clientes, procesos RAT, casos y expedientes.
 Ejecución: python -m db.seed (o vía Docker)
 """
 
@@ -13,7 +13,10 @@ from sqlalchemy import select
 
 from core.security import hash_password
 from db.session import async_session_maker
+from models.caso import Caso, CasoEstado, CasoPrioridad, CasoTipo
 from models.cliente import Cliente
+from models.expediente import Expediente, ExpedienteEstado
+from models.proceso import BaseLegal, Proceso
 from models.tenant import Tenant, TenantPlan
 from models.usuario import UserRole, Usuario
 
@@ -78,7 +81,9 @@ async def run_seed():
         ]
 
         for email, nombre, apellido, rol in demo_users:
-            stmt = select(Usuario).where(Usuario.tenant_id == tenant_demo.id, Usuario.email == email)
+            stmt = select(Usuario).where(
+                Usuario.tenant_id == tenant_demo.id, Usuario.email == email
+            )
             res = await db.execute(stmt)
             if not res.scalar_one_or_none():
                 user = Usuario(
@@ -95,9 +100,12 @@ async def run_seed():
                 logger.info(f"✅ Usuario creado: {email} ({rol.value})")
 
         # ── 4. Cliente Demo dentro del Tenant ─────────────────────
-        stmt = select(Cliente).where(Cliente.tenant_id == tenant_demo.id, Cliente.ruc == "1790012345001")
+        stmt = select(Cliente).where(
+            Cliente.tenant_id == tenant_demo.id, Cliente.ruc == "1790012345001"
+        )
         res = await db.execute(stmt)
-        if not res.scalar_one_or_none():
+        cliente = res.scalar_one_or_none()
+        if not cliente:
             cliente = Cliente(
                 id=uuid.UUID("22222222-2222-2222-2222-222222222222"),
                 tenant_id=tenant_demo.id,
@@ -110,10 +118,81 @@ async def run_seed():
                 activo=True,
             )
             db.add(cliente)
-            logger.info("✅ Cliente Demo creado: Empresa Farmacéutica Andina S.A. (RUC 1790012345001)")
+            await db.flush()
+            logger.info(
+                "✅ Cliente Demo creado: Empresa Farmacéutica Andina S.A. (RUC 1790012345001)"
+            )
+
+        # ── 5. Proceso Demo (RAT) ─────────────────────────────────
+        stmt = select(Proceso).where(
+            Proceso.tenant_id == tenant_demo.id,
+            Proceso.nombre == "Gestión de Pacientes y Ensayos Clínicos",
+        )
+        res = await db.execute(stmt)
+        proceso = res.scalar_one_or_none()
+        if not proceso:
+            proceso = Proceso(
+                id=uuid.UUID("33333333-3333-3333-3333-333333333333"),
+                tenant_id=tenant_demo.id,
+                cliente_id=cliente.id,
+                nombre="Gestión de Pacientes y Ensayos Clínicos",
+                descripcion="Tratamiento de historias clínicas, consentimiento informado y datos genéticos para investigación",
+                area_responsable="Dirección Médica y Regulatoria",
+                base_legal=BaseLegal.consentimiento.value,
+                finalidad="Investigación clínica y cumplimiento de protocolos farmacológicos LOPDP Art. 7",
+                tipo_datos=["identificativos", "salud", "biométricos"],
+                activo=True,
+                created_by=super_admin.id,
+            )
+            db.add(proceso)
+            await db.flush()
+            logger.info("✅ Proceso RAT creado: Gestión de Pacientes y Ensayos Clínicos")
+
+        # ── 6. Caso Demo (Incidente) ──────────────────────────────
+        stmt = select(Caso).where(Caso.tenant_id == tenant_demo.id, Caso.codigo == "CAS-2026-0001")
+        res = await db.execute(stmt)
+        caso = res.scalar_one_or_none()
+        if not caso:
+            caso = Caso(
+                id=uuid.UUID("44444444-4444-4444-4444-444444444444"),
+                tenant_id=tenant_demo.id,
+                codigo="CAS-2026-0001",
+                cliente_id=cliente.id,
+                proceso_id=proceso.id,
+                titulo="Sospecha de exfiltración de base de datos de pacientes",
+                descripcion="Alerta del SIEM sobre tráfico anómalo outbound desde el servidor de base de datos médica",
+                tipo=CasoTipo.incidente_seguridad,
+                prioridad=CasoPrioridad.critica,
+                estado=CasoEstado.en_investigacion,
+                created_by=super_admin.id,
+            )
+            db.add(caso)
+            await db.flush()
+            logger.info("✅ Caso Demo creado: CAS-2026-0001 (Incidente Crítico)")
+
+        # ── 7. Expediente Demo ────────────────────────────────────
+        stmt = select(Expediente).where(
+            Expediente.tenant_id == tenant_demo.id, Expediente.codigo == "EXP-2026-0001"
+        )
+        res = await db.execute(stmt)
+        expediente = res.scalar_one_or_none()
+        if not expediente:
+            expediente = Expediente(
+                id=uuid.UUID("55555555-5555-5555-5555-555555555555"),
+                tenant_id=tenant_demo.id,
+                codigo="EXP-2026-0001",
+                caso_id=caso.id,
+                cliente_id=cliente.id,
+                nombre="Expediente Pericial Forense CAS-2026-0001",
+                descripcion="Informes técnicos de mitigación, actas del comité de crisis y notificación a la Autoridad de Protección de Datos",
+                estado=ExpedienteEstado.activo,
+                created_by=super_admin.id,
+            )
+            db.add(expediente)
+            logger.info("✅ Expediente Demo creado: EXP-2026-0001")
 
         await db.commit()
-        logger.info("🎉 Seed completado exitosamente.")
+        logger.info("🎉 Seed completado exitosamente con entidades de Fase 1 y Fase 2.")
 
 
 if __name__ == "__main__":

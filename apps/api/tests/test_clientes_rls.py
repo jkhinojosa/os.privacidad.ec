@@ -5,83 +5,8 @@ Verifica que las políticas de Row-Level Security en PostgreSQL
 aíslen completamente los datos entre diferentes organizaciones/tenants.
 """
 
-import uuid
-
 import pytest
 from httpx import AsyncClient
-from sqlalchemy.ext.asyncio import AsyncSession
-
-from core.security import create_access_token, hash_password
-from models.tenant import Tenant, TenantPlan
-from models.usuario import UserRole, Usuario
-
-
-@pytest.fixture
-async def multi_tenant_setup(db_session: AsyncSession):
-    """
-    Crea dos tenants independientes (Tenant Alpha y Tenant Beta)
-    con sus respectivos administradores para probar el aislamiento RLS.
-    """
-    # ── Tenant Alpha ─────────────────────────────────────────────
-    tenant_alpha = Tenant(
-        id=uuid.uuid4(),
-        nombre="Organización Alpha",
-        slug=f"alpha-{uuid.uuid4().hex[:6]}",
-        plan=TenantPlan.professional,
-    )
-    db_session.add(tenant_alpha)
-    await db_session.flush()
-
-    user_alpha = Usuario(
-        id=uuid.uuid4(),
-        tenant_id=tenant_alpha.id,
-        email=f"admin@{tenant_alpha.slug}.ec",
-        password_hash=hash_password("Password123!"),
-        nombre="Admin",
-        apellido="Alpha",
-        rol=UserRole.tenant_admin,
-    )
-    db_session.add(user_alpha)
-
-    # ── Tenant Beta ──────────────────────────────────────────────
-    tenant_beta = Tenant(
-        id=uuid.uuid4(),
-        nombre="Organización Beta",
-        slug=f"beta-{uuid.uuid4().hex[:6]}",
-        plan=TenantPlan.enterprise,
-    )
-    db_session.add(tenant_beta)
-    await db_session.flush()
-
-    user_beta = Usuario(
-        id=uuid.uuid4(),
-        tenant_id=tenant_beta.id,
-        email=f"admin@{tenant_beta.slug}.ec",
-        password_hash=hash_password("Password123!"),
-        nombre="Admin",
-        apellido="Beta",
-        rol=UserRole.tenant_admin,
-    )
-    db_session.add(user_beta)
-    await db_session.commit()
-
-    token_alpha = create_access_token(
-        subject=user_alpha.id,
-        extra_claims={"email": user_alpha.email, "rol": user_alpha.rol.value, "tenant_id": str(tenant_alpha.id)},
-    )
-    token_beta = create_access_token(
-        subject=user_beta.id,
-        extra_claims={"email": user_beta.email, "rol": user_beta.rol.value, "tenant_id": str(tenant_beta.id)},
-    )
-
-    return {
-        "tenant_alpha": tenant_alpha,
-        "user_alpha": user_alpha,
-        "headers_alpha": {"Authorization": f"Bearer {token_alpha}"},
-        "tenant_beta": tenant_beta,
-        "user_beta": user_beta,
-        "headers_beta": {"Authorization": f"Bearer {token_beta}"},
-    }
 
 
 @pytest.mark.asyncio
@@ -121,5 +46,7 @@ async def test_cross_tenant_isolation_rls(client: AsyncClient, multi_tenant_setu
     assert cliente_alpha_id not in beta_client_ids
 
     # 4. Tenant Beta intenta acceder directamente al ID del cliente de Alpha -> 404 NOT FOUND
-    resp_get_cross_tenant = await client.get(f"/api/v1/clientes/{cliente_alpha_id}", headers=headers_beta)
+    resp_get_cross_tenant = await client.get(
+        f"/api/v1/clientes/{cliente_alpha_id}", headers=headers_beta
+    )
     assert resp_get_cross_tenant.status_code == 404

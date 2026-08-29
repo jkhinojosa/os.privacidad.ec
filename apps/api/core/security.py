@@ -78,9 +78,7 @@ def create_refresh_token(
     Retorna (token_string, jti).
     """
     jti = str(uuid.uuid4())
-    expire = datetime.now(UTC) + (
-        expires_delta or timedelta(days=settings.JWT_REFRESH_EXPIRE_DAYS)
-    )
+    expire = datetime.now(UTC) + (expires_delta or timedelta(days=settings.JWT_REFRESH_EXPIRE_DAYS))
     to_encode: dict[str, Any] = {
         "sub": str(subject),
         "jti": jti,

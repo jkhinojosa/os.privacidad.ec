@@ -21,7 +21,9 @@ async def test_tenant_admin_can_create_user(client: AsyncClient, tenant_admin_au
         "apellido": "Usuario",
         "rol": "analista",
     }
-    response = await client.post("/api/v1/usuarios", json=payload, headers=tenant_admin_auth_headers)
+    response = await client.post(
+        "/api/v1/usuarios", json=payload, headers=tenant_admin_auth_headers
+    )
     assert response.status_code == 201
     data = response.json()
     assert data["email"] == unique_email
@@ -29,7 +31,9 @@ async def test_tenant_admin_can_create_user(client: AsyncClient, tenant_admin_au
 
 
 @pytest.mark.asyncio
-async def test_tenant_admin_cannot_create_superadmin(client: AsyncClient, tenant_admin_auth_headers: dict):
+async def test_tenant_admin_cannot_create_superadmin(
+    client: AsyncClient, tenant_admin_auth_headers: dict
+):
     """TenantAdmin no puede crear un usuario con rol super_admin (403 Forbidden)."""
     payload = {
         "email": f"hacker-{uuid.uuid4().hex[:6]}@demo.ec",
@@ -38,7 +42,9 @@ async def test_tenant_admin_cannot_create_superadmin(client: AsyncClient, tenant
         "apellido": "Attempt",
         "rol": "super_admin",
     }
-    response = await client.post("/api/v1/usuarios", json=payload, headers=tenant_admin_auth_headers)
+    response = await client.post(
+        "/api/v1/usuarios", json=payload, headers=tenant_admin_auth_headers
+    )
     assert response.status_code == 403
 
 

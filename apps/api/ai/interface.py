@@ -69,8 +69,7 @@ def get_ai_provider(provider_name: str) -> AIProvider:
     if provider_cls is None:
         available = ", ".join(_providers.keys()) or "(ninguno configurado)"
         raise ValueError(
-            f"Proveedor de IA '{provider_name}' no registrado. "
-            f"Disponibles: {available}"
+            f"Proveedor de IA '{provider_name}' no registrado. Disponibles: {available}"
         )
 
     return provider_cls()

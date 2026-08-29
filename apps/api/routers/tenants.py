@@ -50,7 +50,12 @@ async def create_tenant(
     if result.scalar_one_or_none():
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail={"error": {"code": "SLUG_ALREADY_EXISTS", "message": f"El slug '{payload.slug}' ya está en uso"}},
+            detail={
+                "error": {
+                    "code": "SLUG_ALREADY_EXISTS",
+                    "message": f"El slug '{payload.slug}' ya está en uso",
+                }
+            },
         )
 
     tenant = Tenant(

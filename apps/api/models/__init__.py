@@ -6,7 +6,10 @@ Importa todos los modelos para que Alembic y SQLAlchemy registren sus metadatos.
 
 from db.base import Base, TimestampMixin
 from models.audit_log import AuditLog
+from models.caso import Caso, CasoEstado, CasoPrioridad, CasoTipo
 from models.cliente import Cliente
+from models.expediente import Expediente, ExpedienteEstado
+from models.proceso import BaseLegal, Proceso
 from models.tenant import Tenant, TenantPlan
 from models.usuario import UserRole, Usuario
 
@@ -19,4 +22,12 @@ __all__ = [
     "Usuario",
     "UserRole",
     "AuditLog",
+    "Proceso",
+    "BaseLegal",
+    "Caso",
+    "CasoTipo",
+    "CasoPrioridad",
+    "CasoEstado",
+    "Expediente",
+    "ExpedienteEstado",
 ]

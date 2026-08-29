@@ -37,7 +37,9 @@ async def test_superadmin_can_create_tenant(client: AsyncClient, superadmin_auth
 
 
 @pytest.mark.asyncio
-async def test_tenant_admin_cannot_access_tenants(client: AsyncClient, tenant_admin_auth_headers: dict):
+async def test_tenant_admin_cannot_access_tenants(
+    client: AsyncClient, tenant_admin_auth_headers: dict
+):
     """Un usuario con rol tenant_admin no puede acceder a /tenants (403 Forbidden)."""
     response = await client.get("/api/v1/tenants", headers=tenant_admin_auth_headers)
     assert response.status_code == 403

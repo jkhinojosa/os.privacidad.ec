@@ -16,6 +16,7 @@ from models.usuario import UserRole
 
 class UsuarioBase(BaseModel):
     """Campos base de un usuario."""
+
     email: EmailStr
     nombre: str = Field(..., min_length=2, max_length=100)
     apellido: str = Field(..., min_length=2, max_length=100)
@@ -25,11 +26,13 @@ class UsuarioBase(BaseModel):
 
 class UsuarioCreate(UsuarioBase):
     """Payload para registrar o invitar a un nuevo usuario."""
+
     password: str = Field(..., min_length=8, max_length=100)
 
 
 class UsuarioUpdate(BaseModel):
     """Payload para actualizar datos de un usuario."""
+
     nombre: str | None = Field(None, min_length=2, max_length=100)
     apellido: str | None = Field(None, min_length=2, max_length=100)
     rol: UserRole | None = None
@@ -39,6 +42,7 @@ class UsuarioUpdate(BaseModel):
 
 class UsuarioResponse(BaseModel):
     """Respuesta con datos de usuario."""
+
     model_config = ConfigDict(from_attributes=True)
 
     id: uuid.UUID
@@ -55,5 +59,6 @@ class UsuarioResponse(BaseModel):
 
 class PasswordChangeRequest(BaseModel):
     """Payload para cambio de contraseña."""
+
     old_password: str
     new_password: str = Field(..., min_length=8, max_length=100)

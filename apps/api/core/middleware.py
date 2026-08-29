@@ -36,9 +36,7 @@ class TenantMiddleware(BaseHTTPMiddleware):
     Fase 1: Extrae tenant_id del JWT → SET app.tenant_id en PostgreSQL.
     """
 
-    async def dispatch(
-        self, request: Request, call_next: RequestResponseEndpoint
-    ) -> Response:
+    async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
         path = request.url.path
 
         # Rutas exentas de tenant context

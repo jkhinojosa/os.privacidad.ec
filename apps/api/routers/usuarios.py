@@ -44,9 +44,7 @@ async def create_usuario(
     payload: UsuarioCreate,
     request: Request,
     db: AsyncSession = Depends(get_tenant_db),
-    current_user: Usuario = Depends(
-        require_role(UserRole.super_admin, UserRole.tenant_admin)
-    ),
+    current_user: Usuario = Depends(require_role(UserRole.super_admin, UserRole.tenant_admin)),
 ) -> UsuarioResponse:
     """
     Crea un nuevo usuario en el tenant.
@@ -56,7 +54,12 @@ async def create_usuario(
     if payload.rol == UserRole.super_admin and current_user.rol != UserRole.super_admin:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail={"error": {"code": "FORBIDDEN_ROLE", "message": "Solo un SuperAdmin puede asignar el rol super_admin"}},
+            detail={
+                "error": {
+                    "code": "FORBIDDEN_ROLE",
+                    "message": "Solo un SuperAdmin puede asignar el rol super_admin",
+                }
+            },
         )
 
     tenant_id = current_user.tenant_id
@@ -67,7 +70,12 @@ async def create_usuario(
     if result.scalar_one_or_none():
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail={"error": {"code": "EMAIL_EXISTS", "message": f"El email '{payload.email}' ya está registrado en este tenant"}},
+            detail={
+                "error": {
+                    "code": "EMAIL_EXISTS",
+                    "message": f"El email '{payload.email}' ya está registrado en este tenant",
+                }
+            },
         )
 
     usuario = Usuario(
@@ -132,9 +140,7 @@ async def update_usuario(
     payload: UsuarioUpdate,
     request: Request,
     db: AsyncSession = Depends(get_tenant_db),
-    current_user: Usuario = Depends(
-        require_role(UserRole.super_admin, UserRole.tenant_admin)
-    ),
+    current_user: Usuario = Depends(require_role(UserRole.super_admin, UserRole.tenant_admin)),
 ) -> UsuarioResponse:
     """
     Actualiza datos de un usuario en el tenant.
@@ -155,10 +161,19 @@ async def update_usuario(
     update_data = payload.model_dump(exclude_unset=True)
 
     # Validar escalamiento si se intenta modificar el rol
-    if "rol" in update_data and update_data["rol"] == UserRole.super_admin and current_user.rol != UserRole.super_admin:
+    if (
+        "rol" in update_data
+        and update_data["rol"] == UserRole.super_admin
+        and current_user.rol != UserRole.super_admin
+    ):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail={"error": {"code": "FORBIDDEN_ROLE", "message": "Solo un SuperAdmin puede asignar el rol super_admin"}},
+            detail={
+                "error": {
+                    "code": "FORBIDDEN_ROLE",
+                    "message": "Solo un SuperAdmin puede asignar el rol super_admin",
+                }
+            },
         )
 
     for field, value in update_data.items():

@@ -61,7 +61,9 @@ async def create_cliente(
     if not current_user.tenant_id and current_user.rol != UserRole.super_admin:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail={"error": {"code": "NO_TENANT", "message": "Usuario no pertenece a un tenant válido"}},
+            detail={
+                "error": {"code": "NO_TENANT", "message": "Usuario no pertenece a un tenant válido"}
+            },
         )
 
     tenant_id = current_user.tenant_id
@@ -72,7 +74,12 @@ async def create_cliente(
     if result.scalar_one_or_none():
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail={"error": {"code": "RUC_EXISTS", "message": f"Ya existe un cliente con RUC {payload.ruc} en esta organización"}},
+            detail={
+                "error": {
+                    "code": "RUC_EXISTS",
+                    "message": f"Ya existe un cliente con RUC {payload.ruc} en esta organización",
+                }
+            },
         )
 
     cliente = Cliente(
@@ -188,9 +195,7 @@ async def delete_cliente(
     cliente_id: uuid.UUID,
     request: Request,
     db: AsyncSession = Depends(get_tenant_db),
-    current_user: Usuario = Depends(
-        require_role(UserRole.super_admin, UserRole.tenant_admin)
-    ),
+    current_user: Usuario = Depends(require_role(UserRole.super_admin, UserRole.tenant_admin)),
 ):
     """
     Desactiva (soft-delete) un cliente dentro del tenant.

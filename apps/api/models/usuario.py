@@ -24,6 +24,7 @@ if TYPE_CHECKING:
 
 class UserRole(enum.StrEnum):
     """Roles disponibles en el sistema con permisos jerárquicos (RBAC)."""
+
     super_admin = "super_admin"
     tenant_admin = "tenant_admin"
     dpo = "dpo"
@@ -37,10 +38,9 @@ class Usuario(Base, TimestampMixin):
     Usuario del sistema. Pertenece a un Tenant (o null si es SuperAdmin global).
     Puede estar asociado a un Cliente específico (ej. si su rol es 'cliente').
     """
+
     __tablename__ = "usuarios"
-    __table_args__ = (
-        UniqueConstraint("tenant_id", "email", name="uq_usuarios_tenant_email"),
-    )
+    __table_args__ = (UniqueConstraint("tenant_id", "email", name="uq_usuarios_tenant_email"),)
 
     tenant_id: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True),

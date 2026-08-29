@@ -101,6 +101,7 @@ def require_role(*allowed_roles: UserRole) -> Callable:
     Dependency factory para verificar que el usuario posea uno de los roles permitidos.
     El rol 'super_admin' tiene acceso por defecto a todos los endpoints excepto si se restringe.
     """
+
     async def role_checker(
         current_user: Usuario = Depends(get_current_user),
     ) -> Usuario:

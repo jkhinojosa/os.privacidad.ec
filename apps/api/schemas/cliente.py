@@ -14,6 +14,7 @@ from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 class ClienteBase(BaseModel):
     """Campos base de un cliente."""
+
     nombre_razon_social: str = Field(..., min_length=2, max_length=255)
     ruc: str = Field(..., min_length=10, max_length=13, pattern=r"^\d{10,13}$")
     sector: str | None = Field(None, max_length=100)
@@ -23,11 +24,13 @@ class ClienteBase(BaseModel):
 
 class ClienteCreate(ClienteBase):
     """Payload para crear un nuevo cliente."""
+
     pass
 
 
 class ClienteUpdate(BaseModel):
     """Payload para actualizar datos de un cliente."""
+
     nombre_razon_social: str | None = Field(None, min_length=2, max_length=255)
     sector: str | None = Field(None, max_length=100)
     contacto_principal_nombre: str | None = Field(None, min_length=2, max_length=255)
@@ -37,6 +40,7 @@ class ClienteUpdate(BaseModel):
 
 class ClienteResponse(BaseModel):
     """Respuesta con datos de cliente."""
+
     model_config = ConfigDict(from_attributes=True)
 
     id: uuid.UUID

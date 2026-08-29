@@ -25,6 +25,7 @@ if TYPE_CHECKING:
 
 class TenantPlan(enum.StrEnum):
     """Planes disponibles para organizaciones en la plataforma."""
+
     community = "community"
     professional = "professional"
     enterprise = "enterprise"
@@ -35,6 +36,7 @@ class Tenant(Base):
     Representa una organización / tenant independiente en la base de datos.
     El aislamiento de los datos se realiza a nivel de fila (RLS) usando tenant_id.
     """
+
     __tablename__ = "tenants"
 
     id: Mapped[uuid.UUID] = mapped_column(
