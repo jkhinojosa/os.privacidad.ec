@@ -3,7 +3,6 @@
 import React from "react";
 import { ProfileProvider } from "@/components/ProfileContext";
 import { Navbar } from "@/components/Navbar";
-import { Sidebar } from "@/components/Sidebar";
 
 export default function DashboardLayout({
   children,
@@ -12,14 +11,11 @@ export default function DashboardLayout({
 }) {
   return (
     <ProfileProvider>
-      <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col antialiased selection:bg-emerald-500/30 selection:text-emerald-200">
+      <div className="min-h-screen bg-[#f1f5f9] text-slate-900 flex flex-col antialiased selection:bg-orange-500/20 selection:text-orange-900">
         <Navbar />
-        <div className="flex-1 flex overflow-hidden">
-          <Sidebar />
-          <main className="flex-1 overflow-y-auto p-6 md:p-8 space-y-6">
-            {children}
-          </main>
-        </div>
+        <main className="flex-1 max-w-7xl w-full mx-auto p-6 md:p-8 space-y-8">
+          {children}
+        </main>
       </div>
     </ProfileProvider>
   );

@@ -9,14 +9,20 @@ import {
   Flame,
   ShieldCheck,
   Clock,
-  ArrowUpRight,
+  ArrowRight,
   TrendingUp,
   Download,
   Activity,
   CheckCircle2,
-  AlertCircle,
-  HelpCircle,
+  ChevronDown,
+  ChevronUp,
+  Plus,
+  MapPin,
+  Sparkles,
+  Layers,
   FileCheck,
+  Shield,
+  Lock,
 } from "lucide-react";
 import { useProfile } from "@/components/ProfileContext";
 import { NormativeTooltip } from "@/components/NormativeTooltip";
@@ -27,22 +33,20 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [slaDerechos, setSlaDerechos] = useState<any>(null);
   const [slaBrechas, setSlaBrechas] = useState<any>(null);
-  const [matrizRiesgos, setMatrizRiesgos] = useState<any>(null);
+  const [activeDay, setActiveDay] = useState<string>("J");
+  const [expandedItem, setExpandedItem] = useState<number | null>(0);
 
   useEffect(() => {
     async function loadMetrics() {
       try {
         setLoading(true);
-        // Cargar métricas en paralelo
-        const [resDerechos, resBrechas, resMatriz] = await Promise.allSettled([
+        const [resDerechos, resBrechas] = await Promise.allSettled([
           apiFetch("/solicitudes-derechos/resumen-sla"),
           apiFetch("/brechas-seguridad/resumen-sla"),
-          apiFetch("/riesgos/matriz"),
         ]);
 
         if (resDerechos.status === "fulfilled") setSlaDerechos(resDerechos.value);
         if (resBrechas.status === "fulfilled") setSlaBrechas(resBrechas.value);
-        if (resMatriz.status === "fulfilled") setMatrizRiesgos(resMatriz.value);
       } catch (err) {
         console.error("Error loading metrics:", err);
       } finally {
@@ -52,353 +56,383 @@ export default function DashboardPage() {
     loadMetrics();
   }, []);
 
+  // Data for the lollipop chart (7 days)
+  const chartDays = [
+    { label: "L", value: 45, fullDay: "Lunes" },
+    { label: "M", value: 65, fullDay: "Martes" },
+    { label: "M", value: 55, fullDay: "Miércoles" },
+    { label: "J", value: 92, fullDay: "Jueves", isCurrent: true },
+    { label: "V", value: 80, fullDay: "Viernes" },
+    { label: "S", value: 60, fullDay: "Sábado" },
+    { label: "D", value: 50, fullDay: "Domingo" },
+  ];
+
   return (
-    <div className="space-y-8 animate-fadeIn">
-      {/* ── Page Header ────────────────────────────────────────── */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
-        <div>
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-slate-100">
-              Dashboard de Gobernanza & Auditoría
-            </h1>
-            <span
-              className={`text-xs font-semibold px-2.5 py-1 rounded-full border ${
-                mode === "juridico"
-                  ? "bg-emerald-500/10 text-emerald-300 border-emerald-500/20"
-                  : "bg-sky-500/10 text-sky-300 border-sky-500/20"
-              }`}
-            >
-              {mode === "juridico" ? "Vista DPO / Legal" : "Vista CISO / TI"}
-            </span>
-          </div>
-          <p className="text-sm text-slate-400 mt-1">
-            Supervisión integral de cumplimiento LOPDP 2026, métricas de riesgo y plazos perentorios ante la SPDP.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => window.print()}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-xs font-semibold text-slate-200 transition-colors shadow-sm"
-          >
-            <Download className="w-4 h-4 text-emerald-400" />
-            <span>Exportar Informe Auditoría SPDP</span>
-          </button>
-        </div>
-      </div>
-
-      {/* ── KPI Executive Cards ─────────────────────────────────── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-        {/* Card 1: RAT Procesos */}
-        <div className="p-5 rounded-2xl bg-slate-900/60 border border-slate-800/80 hover:border-slate-700 transition-all shadow-lg space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-              <span>Inventario RAT</span>
-              <NormativeTooltip
-                articulo="Art. 38 RGLOPDP"
-                titulo="Registro de Actividades de Tratamiento (RAT)"
-                explicacion="Inventario obligatorio y permanente de todos los tratamientos de datos personales gestionados por el responsable."
-                justificacionLegal="La LOPDP y su Reglamento exigen documentar los 9 campos obligatorios para cada proceso. No mantener el RAT actualizado acarrea infracciones graves."
-                criterioTecnico="Mapeo de arquitectura de datos y repositorios para identificar bases de datos con datos personales."
-                sancionRiesgo="Multa grave hasta 0.7% del volumen de negocio."
-              />
-            </span>
-            <div className="w-8 h-8 rounded-xl bg-teal-500/10 text-teal-400 flex items-center justify-center">
-              <FileSpreadsheet className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="flex items-baseline justify-between">
-            <span className="text-3xl font-extrabold text-slate-100">3</span>
-            <span className="text-xs font-medium text-emerald-400 flex items-center gap-1">
-              <CheckCircle2 className="w-3.5 h-3.5" /> 100% 9 Campos
-            </span>
-          </div>
-          <p className="text-xs text-slate-400">
-            Procesos mapeados con base legal activa (Art. 7 LOPDP).
-          </p>
-        </div>
-
-        {/* Card 2: Riesgo Promedio */}
-        <div className="p-5 rounded-2xl bg-slate-900/60 border border-slate-800/80 hover:border-slate-700 transition-all shadow-lg space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-              <span>Riesgo Global</span>
-              <NormativeTooltip
-                articulo="Res. SPDP-SPD-2026-0005-R"
-                titulo="Metodología de Riesgos R = P × (I × V)"
-                explicacion="Fórmula matemática oficial de ponderación donde V=0.8 aplica obligatoriamente a grupos vulnerables, menores o salud."
-                justificacionLegal="Obligación legal de evaluar el impacto en derechos y libertades de los titulares previo al tratamiento."
-                criterioTecnico="Score ponderado cuantitativo de 1 a 25. Scores ≥ 12 gatillan obligatoriamente EIPD."
-              />
-            </span>
-            <div className="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center">
-              <AlertTriangle className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="flex items-baseline justify-between">
-            <span className="text-3xl font-extrabold text-amber-300">Medio</span>
-            <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-amber-950/60 text-amber-300 border border-amber-800/40">
-              Score: 9.6
-            </span>
-          </div>
-          <p className="text-xs text-slate-400">
-            2 Riesgos mitigados • 1 EIPD obligatoria requerida.
-          </p>
-        </div>
-
-        {/* Card 3: SLA Derechos Titulares */}
-        <div className="p-5 rounded-2xl bg-slate-900/60 border border-slate-800/80 hover:border-slate-700 transition-all shadow-lg space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-              <span>SLA Derechos LOPDP</span>
-              <NormativeTooltip
-                articulo="Art. 14 RGLOPDP"
-                titulo="Plazo Perentorio de 15 Días Hábiles"
-                explicacion="Tiempo límite legal para atender solicitudes de Acceso, Rectificación, Eliminación, Oposición, Portabilidad y Suspensión."
-                justificacionLegal="Término estricto en días hábiles. Prórroga de 15 días adicionales requiere justificación técnica de complejidad."
-                criterioTecnico="Cómputo en días hábiles excluyendo sábados, domingos y feriados nacionales ecuatorianos."
-                sancionRiesgo="Infracción grave por denegación tácita del derecho."
-              />
-            </span>
-            <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
-              <Users2 className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="flex items-baseline justify-between">
-            <span className="text-3xl font-extrabold text-emerald-400">
-              {slaDerechos?.porcentaje_cumplimiento || 100}%
-            </span>
-            <span className="text-xs font-medium text-emerald-400 flex items-center gap-1 font-mono">
-              <Clock className="w-3.5 h-3.5" /> 15d Hábiles
-            </span>
-          </div>
-          <p className="text-xs text-slate-400">
-            {slaDerechos?.total_solicitudes || 3} Solicitudes • 0 Vencidas.
-          </p>
-        </div>
-
-        {/* Card 4: SLA Brechas SPDP */}
-        <div className="p-5 rounded-2xl bg-slate-900/60 border border-slate-800/80 hover:border-slate-700 transition-all shadow-lg space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-              <span>Brechas SPDP</span>
-              <NormativeTooltip
-                articulo="Art. 43 LOPDP & Art. 24 RGLOPDP"
-                titulo="Término de 5 Días Notificación SPDP"
-                explicacion="Plazo fatal de 5 días hábiles para notificar incidentes de seguridad que afecten datos personales a la SPDP y ARCOTEL."
-                justificacionLegal="Notificar dentro del término legal es un atenuante formal ante procedimientos sancionatorios. Vencido el plazo exige justificar dilación."
-                criterioTecnico="Respuesta a incidentes ISO/IEC 27035 y contención inmediata para evitar fuga masiva."
-              />
-            </span>
-            <div className="w-8 h-8 rounded-xl bg-rose-500/10 text-rose-400 flex items-center justify-center">
-              <Flame className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="flex items-baseline justify-between">
-            <span className="text-3xl font-extrabold text-rose-400">
-              {slaBrechas?.porcentaje_cumplimiento_spdp || 100}%
-            </span>
-            <span className="text-xs font-medium text-slate-400 font-mono">
-              5d SPDP / 3d Tit.
-            </span>
-          </div>
-          <p className="text-xs text-slate-400">
-            {slaBrechas?.total_brechas || 1} Incidente notificado con radicado formal.
-          </p>
-        </div>
-      </div>
-
-      {/* ── Main Dashboard Content Grid ────────────────────────── */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left 2 Cols: Matriz de Calor 5x5 & Control Preventivo */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Matriz 5x5 Widget */}
-          <div className="p-6 rounded-2xl bg-slate-900/60 border border-slate-800/80 shadow-lg space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Activity className="w-5 h-5 text-emerald-400" />
-                <h3 className="text-base font-bold text-slate-100">
-                  Matriz de Calor de Riesgos LOPDP (5 × 5)
-                </h3>
+    <div className="space-y-6 animate-fadeIn pb-12">
+      {/* ── TOP ROW: Main Hero Card (Left) & Recent Projects Accordion (Right) ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        {/* ── 1. Hero Card: Monitor de Cumplimiento & SLA LOPDP (7 Cols) ── */}
+        <div className="lg:col-span-7 neo-card p-8 relative flex flex-col justify-between min-h-[440px]">
+          {/* Card Header */}
+          <div className="flex items-start justify-between">
+            <div className="space-y-1.5">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-slate-100 flex items-center justify-center text-slate-700">
+                  <Shield className="w-5 h-5" />
+                </div>
+                <h2 className="text-3xl font-extrabold tracking-tight text-slate-900">
+                  Monitor LOPDP
+                </h2>
                 <NormativeTooltip
-                  articulo="Guía de Riesgos SPDP 2026"
-                  titulo="Ponderación de Probabilidad vs Impacto"
-                  explicacion="Visualización bidimensional del riesgo inherente y residual tras aplicar controles de seguridad (técnicos, organizativos y jurídicos)."
-                  justificacionLegal="Exigencia de la autoridad para clasificar operaciones de tratamiento de alto riesgo."
+                  articulo="Capítulo III LOPDP & Art. 14 RGLOPDP"
+                  titulo="Monitoreo Continuo de Plazos Perentorios"
+                  explicacion="Seguimiento en tiempo real del cumplimiento de los términos de 15 días hábiles para derechos y 5 días para SPDP."
                 />
               </div>
-              <Link
-                href="/dashboard/riesgos"
-                className="text-xs font-semibold text-emerald-400 hover:text-emerald-300 flex items-center gap-1 transition-colors"
-              >
-                <span>Ver Detalle Completo</span>
-                <ArrowUpRight className="w-3.5 h-3.5" />
-              </Link>
-            </div>
-
-            {/* Matriz Grid Mini */}
-            <div className="bg-slate-950 p-4 rounded-xl border border-slate-800/80 space-y-2">
-              <div className="grid grid-cols-5 gap-1.5 text-center text-[10px] font-mono">
-                {[5, 4, 3, 2, 1].map((prob) =>
-                  [1, 2, 3, 4, 5].map((imp) => {
-                    const score = prob * imp * 0.5;
-                    let bgColor = "bg-emerald-950/40 text-emerald-400 border-emerald-900/30";
-                    if (score >= 8 && score < 12) bgColor = "bg-amber-950/40 text-amber-300 border-amber-900/30";
-                    if (score >= 12) bgColor = "bg-rose-950/40 text-rose-400 border-rose-900/30";
-
-                    return (
-                      <div
-                        key={`${prob}-${imp}`}
-                        className={`h-9 rounded-lg border flex flex-col items-center justify-center transition-transform hover:scale-105 cursor-pointer ${bgColor}`}
-                        title={`P: ${prob}, I: ${imp} • Score: ${score.toFixed(1)}`}
-                      >
-                        <span className="font-bold">{score.toFixed(1)}</span>
-                      </div>
-                    );
-                  })
-                )}
-              </div>
-              <div className="flex justify-between text-[11px] text-slate-400 pt-2 font-mono">
-                <span>Impacto → (1 a 5)</span>
-                <span>Probabilidad ↑ (1 a 5)</span>
-              </div>
-            </div>
-          </div>
-
-          {/* SLA Derechos Preview */}
-          <div className="p-6 rounded-2xl bg-slate-900/60 border border-slate-800/80 shadow-lg space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Users2 className="w-5 h-5 text-emerald-400" />
-                <h3 className="text-base font-bold text-slate-100">
-                  Solicitudes de Derechos de Titulares Recientes
-                </h3>
-                <NormativeTooltip
-                  articulo="Capítulo III LOPDP"
-                  titulo="Catálogo Oficial de Derechos Digitales"
-                  explicacion="Reemplaza formalmente la denominación foránea ARCO por el catálogo ecuatoriano (Acceso, Rectificación, Supresión, Oposición, Portabilidad, Suspensión)."
-                />
-              </div>
-              <Link
-                href="/dashboard/derechos"
-                className="text-xs font-semibold text-emerald-400 hover:text-emerald-300 flex items-center gap-1 transition-colors"
-              >
-                <span>Bandeja de Entrada</span>
-                <ArrowUpRight className="w-3.5 h-3.5" />
-              </Link>
-            </div>
-
-            <div className="space-y-2">
-              <div className="p-3 rounded-xl bg-slate-950/60 border border-slate-800 flex items-center justify-between text-xs">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="font-mono font-bold text-slate-200">SOL-2026-0001</span>
-                    <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/10 text-emerald-300 border border-emerald-500/20">
-                      Acceso (Art. 13)
-                    </span>
-                  </div>
-                  <p className="text-slate-400 text-[11px] mt-0.5">Dra. María Elena Dávila • Formulario Web</p>
-                </div>
-                <div className="text-right font-mono">
-                  <span className="px-2 py-1 rounded bg-emerald-950/80 text-emerald-300 border border-emerald-800 text-[11px] font-bold">
-                    14 días hábiles restantes
-                  </span>
-                </div>
-              </div>
-
-              <div className="p-3 rounded-xl bg-slate-950/60 border border-slate-800 flex items-center justify-between text-xs">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="font-mono font-bold text-slate-200">SOL-2026-0002</span>
-                    <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-teal-500/10 text-teal-300 border border-teal-500/20">
-                      Rectificación (Art. 14)
-                    </span>
-                  </div>
-                  <p className="text-slate-400 text-[11px] mt-0.5">Lic. Juan Carlos Paredes • Notificado a Encargado Art. 23</p>
-                </div>
-                <div className="text-right font-mono">
-                  <span className="px-2 py-1 rounded bg-teal-950/80 text-teal-300 border border-teal-800 text-[11px] font-bold">
-                    Notificada Encargado
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Right Col: Incidentes de Seguridad & Compliance Status */}
-        <div className="space-y-6">
-          {/* Incidentes Recientes */}
-          <div className="p-6 rounded-2xl bg-slate-900/60 border border-slate-800/80 shadow-lg space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Flame className="w-5 h-5 text-rose-400" />
-                <h3 className="text-base font-bold text-slate-100">
-                  Brechas & Notificaciones SPDP
-                </h3>
-                <NormativeTooltip
-                  articulo="Art. 26 RGLOPDP"
-                  titulo="Informe Técnico de 7 Numerales"
-                  explicacion="Cada brecha genera automáticamente el informe oficial listo para radicar ante la Superintendencia."
-                />
-              </div>
-              <Link
-                href="/dashboard/brechas"
-                className="text-xs font-semibold text-rose-400 hover:text-rose-300 flex items-center gap-1 transition-colors"
-              >
-                <span>Gestión Brechas</span>
-                <ArrowUpRight className="w-3.5 h-3.5" />
-              </Link>
-            </div>
-
-            <div className="p-4 rounded-xl bg-slate-950 border border-rose-950/80 space-y-3 text-xs">
-              <div className="flex items-center justify-between">
-                <span className="font-mono font-bold text-rose-300">BRC-2026-0001</span>
-                <span className="px-2 py-0.5 rounded text-[10px] font-extrabold uppercase bg-rose-500/20 text-rose-300 border border-rose-500/30">
-                  Severidad Crítica
-                </span>
-              </div>
-              <h4 className="font-semibold text-slate-200">
-                Fuga de Credenciales y Tráfico Anómalo Outbound
-              </h4>
-              <p className="text-slate-400 text-[11px] leading-relaxed">
-                2,500 Pacientes comprometidos. Notificada formalmente a la SPDP con radicado <code>SPDP-EXP-2026-004412-E</code>.
+              <p className="text-xs text-slate-400 max-w-md font-normal leading-relaxed pl-13">
+                Supervisión del índice de cumplimiento legal, trazabilidad y resolución de solicitudes de titulares.
               </p>
-              <div className="pt-2 border-t border-slate-800 flex items-center justify-between text-[11px]">
-                <span className="text-emerald-400 font-medium">✓ Notificada en Plazo</span>
-                <Link
-                  href="/dashboard/brechas"
-                  className="text-rose-400 hover:underline font-semibold"
-                >
-                  Descargar Informe Art. 26 →
-                </Link>
-              </div>
+            </div>
+
+            {/* Dropdown Filter Pill */}
+            <div className="flex items-center gap-1.5 px-4 py-2 rounded-full border border-slate-200 bg-white text-xs font-semibold text-slate-700 shadow-sm cursor-pointer hover:bg-slate-50 transition-colors">
+              <span>Semana</span>
+              <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
             </div>
           </div>
 
-          {/* Checklist Auditoría SPDP */}
-          <div className="p-6 rounded-2xl bg-gradient-to-br from-slate-900/90 to-emerald-950/30 border border-emerald-800/40 shadow-lg space-y-3">
-            <div className="flex items-center gap-2 text-emerald-400 font-bold text-sm">
-              <FileCheck className="w-4 h-4" />
-              <span>Inspección Regulatoria SPDP</span>
+          {/* ── Central Lollipop / Dot Chart ── */}
+          <div className="py-6 flex items-end justify-between px-6 sm:px-12 h-44 relative mt-2">
+            {chartDays.map((day, idx) => {
+              const isSelected = activeDay === day.label && (idx === 3 || activeDay === day.label);
+              return (
+                <div
+                  key={idx}
+                  onClick={() => setActiveDay(day.label)}
+                  className="flex flex-col items-center gap-2 group cursor-pointer h-full justify-end relative"
+                >
+                  {/* Floating active pill badge */}
+                  {isSelected && (
+                    <div className="absolute -top-6 px-3 py-1 rounded-full bg-slate-900 text-white text-[11px] font-bold shadow-md shadow-slate-900/20 whitespace-nowrap animate-bounce">
+                      100% SLA
+                    </div>
+                  )}
+
+                  {/* Vertical Line with Dot at the Top */}
+                  <div className="w-[2px] bg-slate-200 flex flex-col justify-start items-center transition-all group-hover:bg-slate-400" style={{ height: `${day.value}%` }}>
+                    <div
+                      className={`w-3.5 h-3.5 rounded-full -mt-1.5 transition-all ${
+                        isSelected
+                          ? "bg-slate-900 ring-4 ring-slate-100"
+                          : "bg-sky-400 group-hover:bg-sky-500"
+                      }`}
+                    />
+                  </div>
+
+                  {/* Day Circle Button */}
+                  <div
+                    className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
+                      isSelected
+                        ? "bg-slate-900 text-white shadow-md"
+                        : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                    }`}
+                  >
+                    {day.label}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Card Footer Metric */}
+          <div className="pt-4 border-t border-slate-100 flex items-baseline justify-between">
+            <div>
+              <div className="text-4xl font-extrabold text-slate-900 tracking-tight">
+                +24%
+              </div>
+              <p className="text-xs text-slate-400 mt-0.5">
+                El índice de resolución en plazo es superior al mes anterior.
+              </p>
             </div>
-            <p className="text-xs text-slate-300 leading-relaxed">
-              El entorno cumple al 100% con los principios de <strong>Responsabilidad Proactiva (Accountability)</strong> exigidos por la Superintendencia de Protección de Datos Personales del Ecuador.
+
+            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-semibold">
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+              <span>0 Sanciones SPDP</span>
+            </div>
+          </div>
+        </div>
+
+        {/* ── 2. Recent Projects / Casos & Brechas (5 Cols) ──────── */}
+        <div className="lg:col-span-5 space-y-4">
+          <div className="flex items-center justify-between px-2">
+            <h3 className="text-xl font-extrabold text-slate-900 tracking-tight">
+              Casos & Brechas Activas
+            </h3>
+            <Link
+              href="/dashboard/casos"
+              className="text-xs font-semibold text-slate-500 hover:text-slate-900 transition-colors"
+            >
+              Ver todos los Casos
+            </Link>
+          </div>
+
+          {/* Accordion Item 1: Brecha Crítica */}
+          <div className="neo-card p-5 space-y-3 neo-card-hover cursor-pointer" onClick={() => setExpandedItem(expandedItem === 0 ? null : 0)}>
+            <div className="flex items-start justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-11 h-11 rounded-2xl bg-orange-600 flex items-center justify-center text-white shadow-md shadow-orange-500/30">
+                  <Flame className="w-6 h-6" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h4 className="font-bold text-slate-900 text-sm">
+                      Fuga de Credenciales DB
+                    </h4>
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase bg-slate-900 text-white">
+                      Notificada
+                    </span>
+                  </div>
+                  <p className="text-xs font-semibold text-slate-400 font-mono">
+                    BRC-2026-0001 • Radicado SPDP
+                  </p>
+                </div>
+              </div>
+
+              <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500">
+                {expandedItem === 0 ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+              </div>
+            </div>
+
+            {/* Tag Pills */}
+            <div className="flex flex-wrap gap-2 pt-1">
+              <span className="px-3 py-1 rounded-full bg-slate-100 text-slate-700 text-xs font-medium">
+                Art. 43 LOPDP
+              </span>
+              <span className="px-3 py-1 rounded-full bg-slate-100 text-slate-700 text-xs font-medium">
+                5 Días Término
+              </span>
+              <span className="px-3 py-1 rounded-full bg-rose-50 text-rose-700 border border-rose-200 text-xs font-semibold">
+                Severidad Crítica
+              </span>
+            </div>
+
+            {/* Expanded Content */}
+            {expandedItem === 0 && (
+              <div className="pt-2 border-t border-slate-100 space-y-2 text-xs text-slate-500">
+                <p className="leading-relaxed">
+                  2,500 Pacientes clínicos comprometidos. Notificación radicada ante la SPDP con formulario oficial Art. 26.
+                </p>
+                <div className="flex items-center justify-between text-[11px] pt-1 text-slate-400">
+                  <span className="flex items-center gap-1">
+                    <MapPin className="w-3 h-3" /> Quito, Ecuador
+                  </span>
+                  <span>Hace 2 horas</span>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Accordion Item 2: Solicitud Rectificación */}
+          <div className="neo-card p-5 space-y-3 neo-card-hover cursor-pointer" onClick={() => setExpandedItem(expandedItem === 1 ? null : 1)}>
+            <div className="flex items-start justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-11 h-11 rounded-2xl bg-sky-600 flex items-center justify-center text-white shadow-md shadow-sky-500/30">
+                  <Users2 className="w-6 h-6" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h4 className="font-bold text-slate-900 text-sm">
+                      Rectificación SOL-2026-0002
+                    </h4>
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-200">
+                      En Plazo
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-400 font-mono">
+                    Art. 23 RGLOPDP Encargados
+                  </p>
+                </div>
+              </div>
+
+              <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500">
+                {expandedItem === 1 ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+              </div>
+            </div>
+
+            {expandedItem === 1 && (
+              <div className="pt-2 border-t border-slate-100 text-xs text-slate-500 leading-relaxed">
+                Orden formal de réplica emitida al proveedor tecnológico para actualizar datos bancarios.
+              </div>
+            )}
+          </div>
+
+          {/* Accordion Item 3: EIPD Aprobada */}
+          <div className="neo-card p-5 space-y-3 neo-card-hover cursor-pointer" onClick={() => setExpandedItem(expandedItem === 2 ? null : 2)}>
+            <div className="flex items-start justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-11 h-11 rounded-2xl bg-teal-600 flex items-center justify-center text-white shadow-md shadow-teal-500/30">
+                  <FileCheck className="w-6 h-6" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h4 className="font-bold text-slate-900 text-sm">
+                      Evaluación EIPD-2026-0001
+                    </h4>
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase bg-slate-900 text-white">
+                      Aprobada
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-400 font-mono">
+                    Res. SPDP-SPD-2026-0005-R
+                  </p>
+                </div>
+              </div>
+
+              <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500">
+                {expandedItem === 2 ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+              </div>
+            </div>
+
+            {expandedItem === 2 && (
+              <div className="pt-2 border-t border-slate-100 text-xs text-slate-500 leading-relaxed">
+                Dictamen favorable emitido para el tratamiento de telemedicina a gran escala.
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* ── BOTTOM ROW: 3 Distinct Cards ──────────────────────── */}
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-stretch">
+        {/* ── 1. Let's Connect / Equipo DPD & CISO (4 Cols) ─────── */}
+        <div className="md:col-span-4 neo-card p-6 space-y-4 flex flex-col justify-between">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-extrabold text-slate-900 tracking-tight">
+              Equipo de Privacidad
+            </h3>
+            <span className="text-xs font-semibold text-slate-400">Ver todo</span>
+          </div>
+
+          <div className="space-y-3">
+            {/* Member 1 */}
+            <div className="flex items-center justify-between p-2 rounded-2xl hover:bg-slate-50 transition-colors">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-slate-800 text-white flex items-center justify-center font-bold text-xs">
+                  RG
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h5 className="font-bold text-slate-900 text-xs">Randy Gouse</h5>
+                    <span className="px-2 py-0.2 rounded-full text-[9px] font-extrabold uppercase bg-rose-600 text-white">
+                      DPD
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-slate-400">Delegado de Protección de Datos</p>
+                </div>
+              </div>
+              <button className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-900 hover:text-white flex items-center justify-center text-slate-700 transition-colors">
+                <Plus className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Member 2 */}
+            <div className="flex items-center justify-between p-2 rounded-2xl hover:bg-slate-50 transition-colors">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-sky-700 text-white flex items-center justify-center font-bold text-xs">
+                  GS
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h5 className="font-bold text-slate-900 text-xs">Giana Schleifer</h5>
+                    <span className="px-2 py-0.2 rounded-full text-[9px] font-extrabold uppercase bg-sky-600 text-white">
+                      CISO
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-slate-400">Oficial de Seguridad TI</p>
+                </div>
+              </div>
+              <button className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-900 hover:text-white flex items-center justify-center text-slate-700 transition-colors">
+                <Plus className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* ── 2. Unlock Premium / Auditoría SPDP 2026 (4 Cols) ───── */}
+        <div className="md:col-span-4 rounded-3xl p-6 relative overflow-hidden bg-gradient-to-br from-slate-200 via-slate-100 to-slate-200 border border-slate-300 flex flex-col justify-between shadow-sm">
+          {/* Halftone / Dot pattern background effect */}
+          <div className="absolute right-0 bottom-0 opacity-15 pointer-events-none text-slate-800 text-9xl font-mono select-none leading-none">
+            🛡️
+          </div>
+
+          <div className="space-y-2 relative z-10">
+            <h4 className="text-xl font-extrabold text-slate-900 tracking-tight">
+              Auditoría SPDP 2026
+            </h4>
+            <p className="text-xs text-slate-600 leading-relaxed max-w-xs">
+              Expediente probatorio inmutable de <em>Accountability</em> listo para inspecciones regulatorias.
             </p>
-            <ul className="space-y-1.5 text-xs text-slate-300 pt-1">
-              <li className="flex items-center gap-1.5">
-                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                <span>Base de Datos PostgreSQL con Aislamiento RLS</span>
-              </li>
-              <li className="flex items-center gap-1.5">
-                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                <span>Cálculo de Plazos en Días Hábiles Ecuatorianos</span>
-              </li>
-              <li className="flex items-center gap-1.5">
-                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                <span>Audit Trail Inmutable de Operaciones</span>
-              </li>
-            </ul>
+          </div>
+
+          <div className="pt-6 relative z-10">
+            <button
+              onClick={() => window.print()}
+              className="w-full py-3 px-5 rounded-full bg-white hover:bg-slate-900 hover:text-white text-slate-900 text-xs font-bold transition-all shadow-md flex items-center justify-between group"
+            >
+              <span>Generar Informe Consolidado</span>
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            </button>
+          </div>
+        </div>
+
+        {/* ── 3. Proposal Progress / Métricas de Respuesta (4 Cols) ─ */}
+        <div className="md:col-span-4 neo-card p-6 space-y-4 flex flex-col justify-between">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-extrabold text-slate-900 tracking-tight">
+              Métricas Legales
+            </h3>
+            <div className="flex items-center gap-1 text-xs font-semibold text-slate-500 cursor-pointer">
+              <span>Agosto 2026</span>
+              <ChevronDown className="w-3.5 h-3.5" />
+            </div>
+          </div>
+
+          {/* 3 Columns metrics */}
+          <div className="grid grid-cols-3 gap-2 text-left pt-1">
+            <div>
+              <span className="text-[10px] font-semibold text-slate-400 block truncate">
+                RAT Registrados
+              </span>
+              <span className="text-2xl font-extrabold text-slate-900">3</span>
+            </div>
+            <div>
+              <span className="text-[10px] font-semibold text-slate-400 block truncate">
+                SLA Derechos
+              </span>
+              <span className="text-2xl font-extrabold text-slate-900">100%</span>
+            </div>
+            <div>
+              <span className="text-[10px] font-semibold text-slate-400 block truncate">
+                Brechas SPDP
+              </span>
+              <span className="text-2xl font-extrabold text-slate-900">100%</span>
+            </div>
+          </div>
+
+          {/* Barcode / Stripe progress meter from reference mockup */}
+          <div className="pt-2 flex items-center gap-1 h-12">
+            {/* Section 1: Grey stripes (Proposals) */}
+            {Array.from({ length: 8 }).map((_, i) => (
+              <div key={`g1-${i}`} className="flex-1 h-8 bg-slate-200 rounded-full" />
+            ))}
+            {/* Section 2: Orange active stripes (Interviews) */}
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={`o-${i}`} className="flex-1 h-10 bg-orange-600 rounded-full" />
+            ))}
+            {/* Section 3: Dark navy stripes (Hires) */}
+            {Array.from({ length: 8 }).map((_, i) => (
+              <div key={`g2-${i}`} className="flex-1 h-8 bg-slate-900 rounded-full" />
+            ))}
           </div>
         </div>
       </div>
