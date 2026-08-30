@@ -22,8 +22,8 @@ interface AuthResponse {
 
 export default function LoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState("admin@osprivacidad.ec");
-  const [password, setPassword] = useState("Admin123456!");
+  const [email, setEmail] = useState("admin@privacidad.ec");
+  const [password, setPassword] = useState("Admin1234!");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -39,7 +39,7 @@ export default function LoginPage() {
       });
 
       setAccessToken(data.token.access_token);
-      router.push("/");
+      router.push("/dashboard");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error al iniciar sesión");
     } finally {
@@ -214,7 +214,23 @@ export default function LoginPage() {
           <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
             <button
               type="button"
-              onClick={() => handleQuickLogin("admin@osprivacidad.ec", "Admin123456!")}
+              onClick={() => handleQuickLogin("admin@privacidad.ec", "Admin1234!")}
+              style={{
+                background: "rgba(16, 185, 129, 0.1)",
+                border: "1px solid rgba(16, 185, 129, 0.2)",
+                color: "#6ee7b7",
+                padding: "0.5rem 0.75rem",
+                borderRadius: "8px",
+                fontSize: "0.8rem",
+                cursor: "pointer",
+                textAlign: "left",
+              }}
+            >
+              👑 <strong>SuperAdmin / DPD:</strong> admin@privacidad.ec
+            </button>
+            <button
+              type="button"
+              onClick={() => handleQuickLogin("admin@farmandina.ec", "Admin1234!")}
               style={{
                 background: "rgba(59, 130, 246, 0.1)",
                 border: "1px solid rgba(59, 130, 246, 0.2)",
@@ -226,31 +242,15 @@ export default function LoginPage() {
                 textAlign: "left",
               }}
             >
-              👑 <strong>SuperAdmin:</strong> admin@osprivacidad.ec
+              🏢 <strong>Tenant FarmAndina:</strong> admin@farmandina.ec
             </button>
             <button
               type="button"
-              onClick={() => handleQuickLogin("tenantadmin@demo.ec", "Demo123456!")}
+              onClick={() => handleQuickLogin("dpo@demo.ec", "Admin1234!")}
               style={{
                 background: "rgba(168, 85, 247, 0.1)",
                 border: "1px solid rgba(168, 85, 247, 0.2)",
                 color: "#d8b4fe",
-                padding: "0.5rem 0.75rem",
-                borderRadius: "8px",
-                fontSize: "0.8rem",
-                cursor: "pointer",
-                textAlign: "left",
-              }}
-            >
-              🏢 <strong>Tenant Admin:</strong> tenantadmin@demo.ec
-            </button>
-            <button
-              type="button"
-              onClick={() => handleQuickLogin("dpo@demo.ec", "Demo123456!")}
-              style={{
-                background: "rgba(34, 197, 94, 0.1)",
-                border: "1px solid rgba(34, 197, 94, 0.2)",
-                color: "#86efac",
                 padding: "0.5rem 0.75rem",
                 borderRadius: "8px",
                 fontSize: "0.8rem",

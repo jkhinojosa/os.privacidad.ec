@@ -91,6 +91,7 @@ services:
     environment:
       - NEXT_PUBLIC_API_URL=http://localhost/api/v1
       - NODE_ENV=development
+      - CI=true
     volumes:
       - ./apps/web:/app
       - /app/node_modules

@@ -40,7 +40,7 @@ async def run_seed():
         logger.info("Verificando si ya existen datos sembrados...")
 
         # ── 1. SuperAdmin Global ──────────────────────────────────
-        stmt = select(Usuario).where(Usuario.email == "admin@osprivacidad.ec")
+        stmt = select(Usuario).where(Usuario.email.in_(["admin@osprivacidad.ec", "admin@privacidad.ec"]))
         res = await db.execute(stmt)
         super_admin = res.scalar_one_or_none()
 
@@ -49,8 +49,8 @@ async def run_seed():
             super_admin = Usuario(
                 id=uuid.UUID("00000000-0000-0000-0000-000000000001"),
                 tenant_id=None,
-                email="admin@osprivacidad.ec",
-                password_hash=hash_password("Admin123456!"),
+                email="admin@privacidad.ec",
+                password_hash=hash_password("Admin1234!"),
                 nombre="Super",
                 apellido="Admin",
                 rol=UserRole.super_admin,
@@ -58,9 +58,11 @@ async def run_seed():
             )
             db.add(super_admin)
             await db.flush()
-            logger.info("✅ SuperAdmin creado: admin@osprivacidad.ec / Admin123456!")
+            logger.info("✅ SuperAdmin creado: admin@privacidad.ec / Admin1234!")
         else:
-            logger.info("ℹ️ SuperAdmin ya existe.")
+            # Asegurar contraseña para login directo
+            super_admin.password_hash = hash_password("Admin1234!")
+            logger.info("ℹ️ SuperAdmin ya existe, contraseña actualizada a Admin1234!.")
 
         # ── 2. Tenant Demo ────────────────────────────────────────
         stmt = select(Tenant).where(Tenant.slug == "demo-corp")
@@ -95,11 +97,12 @@ async def run_seed():
                 Usuario.tenant_id == tenant_demo.id, Usuario.email == email
             )
             res = await db.execute(stmt)
-            if not res.scalar_one_or_none():
+            existing_user = res.scalar_one_or_none()
+            if not existing_user:
                 user = Usuario(
                     tenant_id=tenant_demo.id,
                     email=email,
-                    password_hash=hash_password("Demo123456!"),
+                    password_hash=hash_password("Admin1234!"),
                     nombre=nombre,
                     apellido=apellido,
                     rol=rol,
@@ -108,6 +111,8 @@ async def run_seed():
                 )
                 db.add(user)
                 logger.info(f"✅ Usuario creado: {email} ({rol.value})")
+            else:
+                existing_user.password_hash = hash_password("Admin1234!")
 
         # ── 4. Cliente Demo dentro del Tenant ─────────────────────
         stmt = select(Cliente).where(
