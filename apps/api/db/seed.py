@@ -322,8 +322,133 @@ async def run_seed():
             db.add(expediente)
             logger.info("✅ Expediente Demo creado: EXP-2026-0001")
 
+        # ── 11. Solicitudes de Derechos Demo (LOPDP) ───────────────
+        from core.sla_engine import calcular_fecha_limite_habiles
+        from models.notificacion_encargado import NotificacionEncargado, NotificacionEstado
+        from models.solicitud_derecho import (
+            CanalRecepcion,
+            DerechoTipo,
+            SolicitudDerecho,
+            SolicitudEstado,
+        )
+
+        now = datetime.datetime.now(datetime.UTC)
+
+        # 11.1 Solicitud de Acceso (En Tiempo)
+        stmt = select(SolicitudDerecho).where(
+            SolicitudDerecho.tenant_id == tenant_demo.id, SolicitudDerecho.codigo == "SOL-2026-0001"
+        )
+        res = await db.execute(stmt)
+        sol1 = res.scalar_one_or_none()
+        if not sol1:
+            lim1 = calcular_fecha_limite_habiles(now, 15)
+            sol1 = SolicitudDerecho(
+                tenant_id=tenant_demo.id,
+                codigo="SOL-2026-0001",
+                cliente_id=cliente.id,
+                proceso_id=proceso.id,
+                asignado_a=super_admin.id,
+                tipo_derecho=DerechoTipo.acceso,
+                canal_recepcion=CanalRecepcion.formulario_web,
+                estado=SolicitudEstado.recibida,
+                titular_nombre="Lcdo. Fernando Alarcón",
+                titular_identificacion="1712345678",
+                titular_email="fernando.alarcon@email.ec",
+                titular_telefono="0991234567",
+                motivo_solicitud="Solicito conocer la totalidad de datos personales y registros de salud almacenados en sus bases de datos.",
+                fecha_recepcion=now,
+                fecha_limite_sla=lim1,
+                created_by=super_admin.id,
+            )
+            db.add(sol1)
+            await db.flush()
+            logger.info("✅ Solicitud Demo creada: SOL-2026-0001 (Acceso - En Tiempo)")
+
+        # 11.2 Solicitud de Rectificación y Notificación a Encargado (Art. 23 RGLOPDP)
+        stmt = select(SolicitudDerecho).where(
+            SolicitudDerecho.tenant_id == tenant_demo.id, SolicitudDerecho.codigo == "SOL-2026-0002"
+        )
+        res = await db.execute(stmt)
+        sol2 = res.scalar_one_or_none()
+        if not sol2:
+            lim2 = calcular_fecha_limite_habiles(now - datetime.timedelta(days=5), 15)
+            sol2 = SolicitudDerecho(
+                tenant_id=tenant_demo.id,
+                codigo="SOL-2026-0002",
+                cliente_id=cliente.id,
+                proceso_id=proceso.id,
+                asignado_a=super_admin.id,
+                tipo_derecho=DerechoTipo.rectificacion_actualizacion,
+                canal_recepcion=CanalRecepcion.correo_electronico,
+                estado=SolicitudEstado.notificada_encargados,
+                titular_nombre="Dra. Mariana Benítez",
+                titular_identificacion="0923456789",
+                titular_email="mariana.benitez@email.ec",
+                motivo_solicitud="Actualización de correo electrónico y corrección de número de historia clínica erróneo.",
+                datos_a_modificar={"email_nuevo": "mariana.benitez.doc@email.ec", "historia_clinica": "HC-9921"},
+                fecha_recepcion=now - datetime.timedelta(days=5),
+                fecha_limite_sla=lim2,
+                dictamen_dpd="DICTAMEN FAVORABLE: Procede la rectificación tras verificar cédula de identidad y partida.",
+                fecha_resolucion=now - datetime.timedelta(days=2),
+                resuelto_por=super_admin.id,
+                created_by=super_admin.id,
+            )
+            db.add(sol2)
+            await db.flush()
+
+            # Notificación obligatoria al Encargado del Sistema Hospitalario
+            notif = NotificacionEncargado(
+                tenant_id=tenant_demo.id,
+                solicitud_id=sol2.id,
+                encargado_nombre="Sistemas Cloud Médicos S.A. (Hosting EHR)",
+                encargado_email="dpo-notificaciones@cloudmedicos.ec",
+                tipo_accion_requerida="rectificar",
+                instrucciones_tecnicas="Actualizar campo email e historial clínico en base de datos PostgreSQL de historias clínicas.",
+                estado=NotificacionEstado.enviada,
+                fecha_envio=now - datetime.timedelta(days=2),
+                created_by=super_admin.id,
+            )
+            db.add(notif)
+            await db.flush()
+            logger.info("✅ Solicitud Demo creada: SOL-2026-0002 (Rectificación con Notificación a Encargado)")
+
+        # 11.3 Solicitud de Portabilidad (Atendida con Entrega de Paquete)
+        stmt = select(SolicitudDerecho).where(
+            SolicitudDerecho.tenant_id == tenant_demo.id, SolicitudDerecho.codigo == "SOL-2026-0003"
+        )
+        res = await db.execute(stmt)
+        sol3 = res.scalar_one_or_none()
+        if not sol3:
+            lim3 = calcular_fecha_limite_habiles(now - datetime.timedelta(days=10), 15)
+            sol3 = SolicitudDerecho(
+                tenant_id=tenant_demo.id,
+                codigo="SOL-2026-0003",
+                cliente_id=cliente.id,
+                proceso_id=proceso.id,
+                asignado_a=super_admin.id,
+                tipo_derecho=DerechoTipo.portabilidad,
+                canal_recepcion=CanalRecepcion.formulario_web,
+                estado=SolicitudEstado.atendida,
+                titular_nombre="Ing. Roberto Noboa",
+                titular_identificacion="1709876543",
+                titular_email="roberto.noboa@email.ec",
+                motivo_solicitud="Portabilidad de datos personales y consentimientos en formato JSON estructurado.",
+                fecha_recepcion=now - datetime.timedelta(days=10),
+                fecha_limite_sla=lim3,
+                dictamen_dpd="DICTAMEN FAVORABLE: Generación y puesta a disposición del paquete estructurado JSON.",
+                fecha_resolucion=now - datetime.timedelta(days=4),
+                resuelto_por=super_admin.id,
+                ejecucion_tecnica_completada=True,
+                fecha_ejecucion=now - datetime.timedelta(days=3),
+                resultado_ejecucion="Paquete JSON estructurado exportado y entregado mediante enlace cifrado de descarga.",
+                fecha_cierre=now - datetime.timedelta(days=3),
+                created_by=super_admin.id,
+            )
+            db.add(sol3)
+            logger.info("✅ Solicitud Demo creada: SOL-2026-0003 (Portabilidad - Atendida)")
+
         await db.commit()
-        logger.info("🎉 Seed completado exitosamente con entidades de Fase 1, Fase 2 y Fase 3.")
+        logger.info("🎉 Seed completado exitosamente con entidades de Fase 1, Fase 2, Fase 3 y Fase 4.")
 
 
 if __name__ == "__main__":

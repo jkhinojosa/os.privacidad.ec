@@ -11,6 +11,10 @@ from models.cliente import Cliente
 from models.eipd import EIPDEstado, EvaluacionImpacto
 from models.expediente import Expediente, ExpedienteEstado
 from models.medida_seguridad import MedidaEstado, MedidaSeguridad, MedidaTipo
+from models.notificacion_encargado import (
+    NotificacionEncargado,
+    NotificacionEstado,
+)
 from models.proceso import BaseLegal, FrecuenciaTratamiento, Proceso
 from models.riesgo import (
     Riesgo,
@@ -18,6 +22,12 @@ from models.riesgo import (
     RiesgoEstado,
     RiesgoNivel,
     riesgo_medidas,
+)
+from models.solicitud_derecho import (
+    CanalRecepcion,
+    DerechoTipo,
+    SolicitudDerecho,
+    SolicitudEstado,
 )
 from models.tenant import Tenant, TenantPlan
 from models.usuario import UserRole, Usuario
@@ -50,4 +60,10 @@ __all__ = [
     "riesgo_medidas",
     "EvaluacionImpacto",
     "EIPDEstado",
+    "SolicitudDerecho",
+    "DerechoTipo",
+    "SolicitudEstado",
+    "CanalRecepcion",
+    "NotificacionEncargado",
+    "NotificacionEstado",
 ]

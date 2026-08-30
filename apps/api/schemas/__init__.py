@@ -35,6 +35,11 @@ from schemas.medida_seguridad import (
     MedidaSeguridadResponse,
     MedidaSeguridadUpdate,
 )
+from schemas.notificacion_encargado import (
+    NotificacionEncargadoConfirmacion,
+    NotificacionEncargadoCreate,
+    NotificacionEncargadoResponse,
+)
 from schemas.proceso import ProcesoCreate, ProcesoResponse, ProcesoUpdate
 from schemas.riesgo import (
     MatrizCalorCelda,
@@ -43,6 +48,16 @@ from schemas.riesgo import (
     RiesgoMitigacionRequest,
     RiesgoResponse,
     RiesgoUpdate,
+)
+from schemas.solicitud_derecho import (
+    SolicitudDerechoCreate,
+    SolicitudDerechoResponse,
+    SolicitudDerechoUpdate,
+    SolicitudEjecucionRequest,
+    SolicitudProrrogaRequest,
+    SolicitudResolucionRequest,
+    SolicitudResumenSLAResponse,
+    SolicitudSubsanacionRequest,
 )
 from schemas.tenant import TenantCreate, TenantResponse, TenantUpdate
 from schemas.usuario import (
@@ -93,4 +108,15 @@ __all__ = [
     "EIPDAprobacionRequest",
     "EIPDResponse",
     "EIPDReporteOficialResponse",
+    "SolicitudDerechoCreate",
+    "SolicitudDerechoUpdate",
+    "SolicitudSubsanacionRequest",
+    "SolicitudProrrogaRequest",
+    "SolicitudResolucionRequest",
+    "SolicitudEjecucionRequest",
+    "SolicitudDerechoResponse",
+    "SolicitudResumenSLAResponse",
+    "NotificacionEncargadoCreate",
+    "NotificacionEncargadoConfirmacion",
+    "NotificacionEncargadoResponse",
 ]
