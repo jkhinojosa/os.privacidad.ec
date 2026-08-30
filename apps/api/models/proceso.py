@@ -28,6 +28,7 @@ if TYPE_CHECKING:
 
 class BaseLegal(enum.StrEnum):
     """Bases legales de legitimación para el tratamiento de datos (Art. 7 LOPDP)."""
+
     consentimiento = "consentimiento"
     obligacion_legal = "obligacion_legal"
     ejecucion_contrato = "ejecucion_contrato"
@@ -38,6 +39,7 @@ class BaseLegal(enum.StrEnum):
 
 class FrecuenciaTratamiento(enum.StrEnum):
     """Frecuencia del tratamiento según el Modelo Técnico de Gran Escala (MTGE)."""
+
     unica = "unica"
     periodica = "periodica"
     continua = "continua"
@@ -47,6 +49,7 @@ class Proceso(Base, TimestampMixin):
     """
     Representa una actividad de tratamiento de datos personales en una organización (RAT).
     """
+
     __tablename__ = "procesos"
 
     tenant_id: Mapped[uuid.UUID] = mapped_column(

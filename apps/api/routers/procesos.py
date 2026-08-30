@@ -71,7 +71,9 @@ async def create_proceso(
     if not current_user.tenant_id and current_user.rol != UserRole.super_admin:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail={"error": {"code": "NO_TENANT", "message": "Usuario no pertenece a un tenant válido"}},
+            detail={
+                "error": {"code": "NO_TENANT", "message": "Usuario no pertenece a un tenant válido"}
+            },
         )
 
     tenant_id = current_user.tenant_id
@@ -164,7 +166,12 @@ async def get_proceso(
     if not proceso:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail={"error": {"code": "PROCESO_NOT_FOUND", "message": "Actividad de tratamiento no encontrada"}},
+            detail={
+                "error": {
+                    "code": "PROCESO_NOT_FOUND",
+                    "message": "Actividad de tratamiento no encontrada",
+                }
+            },
         )
 
     return ProcesoResponse.model_validate(proceso)
@@ -193,7 +200,12 @@ async def update_proceso(
     if not proceso:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail={"error": {"code": "PROCESO_NOT_FOUND", "message": "Actividad de tratamiento no encontrada"}},
+            detail={
+                "error": {
+                    "code": "PROCESO_NOT_FOUND",
+                    "message": "Actividad de tratamiento no encontrada",
+                }
+            },
         )
 
     update_data = payload.model_dump(exclude_unset=True)
@@ -256,7 +268,12 @@ async def delete_proceso(
     if not proceso:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail={"error": {"code": "PROCESO_NOT_FOUND", "message": "Actividad de tratamiento no encontrada"}},
+            detail={
+                "error": {
+                    "code": "PROCESO_NOT_FOUND",
+                    "message": "Actividad de tratamiento no encontrada",
+                }
+            },
         )
 
     proceso.activo = False

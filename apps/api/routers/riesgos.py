@@ -61,7 +61,9 @@ async def get_matriz_calor(
     celdas_map: dict[tuple[int, int], MatrizCalorCelda] = {}
     for p in range(1, 6):
         for i in range(1, 6):
-            celdas_map[(p, i)] = MatrizCalorCelda(probabilidad=p, impacto=i, cantidad_inherente=0, cantidad_residual=0, riesgos_ids=[])
+            celdas_map[(p, i)] = MatrizCalorCelda(
+                probabilidad=p, impacto=i, cantidad_inherente=0, cantidad_residual=0, riesgos_ids=[]
+            )
 
     resumen_inherente = {"bajo": 0, "medio": 0, "alto": 0, "critico": 0}
     resumen_residual = {"bajo": 0, "medio": 0, "alto": 0, "critico": 0}
@@ -143,7 +145,9 @@ async def create_riesgo(
     if not current_user.tenant_id and current_user.rol != UserRole.super_admin:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail={"error": {"code": "NO_TENANT", "message": "Usuario no pertenece a un tenant válido"}},
+            detail={
+                "error": {"code": "NO_TENANT", "message": "Usuario no pertenece a un tenant válido"}
+            },
         )
 
     tenant_id = current_user.tenant_id
@@ -202,11 +206,7 @@ async def create_riesgo(
     await db.commit()
 
     # Cargar con relación
-    stmt_reload = (
-        select(Riesgo)
-        .options(selectinload(Riesgo.medidas))
-        .where(Riesgo.id == riesgo.id)
-    )
+    stmt_reload = select(Riesgo).options(selectinload(Riesgo.medidas)).where(Riesgo.id == riesgo.id)
     res_reload = await db.execute(stmt_reload)
     riesgo_loaded = res_reload.scalar_one()
 
@@ -230,11 +230,7 @@ async def get_riesgo(
     """
     Obtiene los detalles completos de un riesgo y sus medidas mitigadoras.
     """
-    stmt = (
-        select(Riesgo)
-        .options(selectinload(Riesgo.medidas))
-        .where(Riesgo.id == riesgo_id)
-    )
+    stmt = select(Riesgo).options(selectinload(Riesgo.medidas)).where(Riesgo.id == riesgo_id)
     if current_user.rol != UserRole.super_admin and current_user.tenant_id:
         stmt = stmt.where(Riesgo.tenant_id == current_user.tenant_id)
 
@@ -263,11 +259,7 @@ async def apply_riesgo_mitigacion(
     """
     Aplica salvaguardas de seguridad al riesgo y calcula el riesgo residual.
     """
-    stmt = (
-        select(Riesgo)
-        .options(selectinload(Riesgo.medidas))
-        .where(Riesgo.id == riesgo_id)
-    )
+    stmt = select(Riesgo).options(selectinload(Riesgo.medidas)).where(Riesgo.id == riesgo_id)
     if current_user.rol != UserRole.super_admin and current_user.tenant_id:
         stmt = stmt.where(Riesgo.tenant_id == current_user.tenant_id)
 
@@ -291,7 +283,12 @@ async def apply_riesgo_mitigacion(
     if not medidas:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail={"error": {"code": "INVALID_MEDIDAS", "message": "Ninguna de las medidas de seguridad especificadas es válida"}},
+            detail={
+                "error": {
+                    "code": "INVALID_MEDIDAS",
+                    "message": "Ninguna de las medidas de seguridad especificadas es válida",
+                }
+            },
         )
 
     # ── Cálculo de Riesgo Residual R = P * (I * V) ────────────

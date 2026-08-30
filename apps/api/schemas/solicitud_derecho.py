@@ -18,6 +18,7 @@ from schemas.notificacion_encargado import NotificacionEncargadoResponse
 
 class SolicitudDerechoBase(BaseModel):
     """Campos base para la recepción de una solicitud de derechos."""
+
     cliente_id: uuid.UUID | None = None
     proceso_id: uuid.UUID | None = None
     tipo_derecho: DerechoTipo
@@ -25,7 +26,9 @@ class SolicitudDerechoBase(BaseModel):
 
     # Datos del Titular
     titular_nombre: str = Field(..., min_length=3, max_length=255)
-    titular_identificacion: str = Field(..., min_length=5, max_length=50, description="Cédula / RUC / Pasaporte")
+    titular_identificacion: str = Field(
+        ..., min_length=5, max_length=50, description="Cédula / RUC / Pasaporte"
+    )
     titular_email: EmailStr
     titular_telefono: str | None = None
 
@@ -43,11 +46,13 @@ class SolicitudDerechoBase(BaseModel):
 
 class SolicitudDerechoCreate(SolicitudDerechoBase):
     """Payload para registrar una nueva solicitud de ejercicio de derechos."""
+
     pass
 
 
 class SolicitudDerechoUpdate(BaseModel):
     """Payload para actualizar datos administrativos de una solicitud."""
+
     asignado_a: uuid.UUID | None = None
     proceso_id: uuid.UUID | None = None
     cliente_id: uuid.UUID | None = None
@@ -57,20 +62,33 @@ class SolicitudDerechoUpdate(BaseModel):
 
 class SolicitudSubsanacionRequest(BaseModel):
     """Payload para requerir subsanación al titular (Art. 14 RGLOPDP)."""
-    motivo_subsanacion: str = Field(..., min_length=10, description="Motivo por el cual la solicitud está incompleta o imprecisa")
-    dias_plazo_titular: int = Field(10, ge=1, le=15, description="Plazo otorgado al titular para subsanar (máx 10d)")
+
+    motivo_subsanacion: str = Field(
+        ...,
+        min_length=10,
+        description="Motivo por el cual la solicitud está incompleta o imprecisa",
+    )
+    dias_plazo_titular: int = Field(
+        10, ge=1, le=15, description="Plazo otorgado al titular para subsanar (máx 10d)"
+    )
 
 
 class SolicitudProrrogaRequest(BaseModel):
     """Payload para aplicar prórroga excepcional de 15 días hábiles."""
-    motivo_prorroga: str = Field(..., min_length=15, description="Justificación técnica de la complejidad de la solicitud")
+
+    motivo_prorroga: str = Field(
+        ..., min_length=15, description="Justificación técnica de la complejidad de la solicitud"
+    )
     dias_prorroga_habiles: int = Field(15, ge=1, le=15)
 
 
 class SolicitudResolucionRequest(BaseModel):
     """Payload para resolver la solicitud (Aprobar o Denegar motivadamente)."""
+
     aprobada: bool = Field(..., description="True si procede el derecho, False si se deniega")
-    dictamen_dpd: str = Field(..., min_length=10, description="Criterio técnico-jurídico vinculante emitido por el DPD")
+    dictamen_dpd: str = Field(
+        ..., min_length=10, description="Criterio técnico-jurídico vinculante emitido por el DPD"
+    )
     excepcion_legal_aplicada: str | None = Field(
         None, description="En caso de negativa, especificar excepción del Art. 18 LOPDP"
     )
@@ -81,12 +99,16 @@ class SolicitudResolucionRequest(BaseModel):
 
 class SolicitudEjecucionRequest(BaseModel):
     """Payload para registrar la ejecución técnica y cierre de la solicitud."""
-    resultado_ejecucion: str = Field(..., min_length=10, description="Detalle del borrado, rectificación, bloqueo o entrega")
+
+    resultado_ejecucion: str = Field(
+        ..., min_length=10, description="Detalle del borrado, rectificación, bloqueo o entrega"
+    )
     marcar_atendida: bool = True
 
 
 class SolicitudDerechoResponse(BaseModel):
     """Respuesta con datos completos de la solicitud y estado de SLA."""
+
     model_config = ConfigDict(from_attributes=True)
 
     id: uuid.UUID
@@ -143,6 +165,7 @@ class SolicitudDerechoResponse(BaseModel):
 
 class SolicitudResumenSLAResponse(BaseModel):
     """Métricas consolidadas de cumplimiento de plazos LOPDP."""
+
     total_solicitudes: int
     en_tiempo: int
     en_alerta: int

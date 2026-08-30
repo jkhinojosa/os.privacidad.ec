@@ -17,6 +17,7 @@ from schemas.medida_seguridad import MedidaSeguridadResponse
 
 class RiesgoBase(BaseModel):
     """Campos base de un escenario de riesgo."""
+
     proceso_id: uuid.UUID | None = None
     nombre: str = Field(..., min_length=3, max_length=255)
     descripcion_amenaza: str = Field(..., min_length=5)
@@ -29,11 +30,13 @@ class RiesgoBase(BaseModel):
 
 class RiesgoCreate(RiesgoBase):
     """Payload para crear un nuevo riesgo."""
+
     medidas_ids: list[uuid.UUID] | None = None
 
 
 class RiesgoUpdate(BaseModel):
     """Payload para actualizar datos descriptivos de un riesgo."""
+
     proceso_id: uuid.UUID | None = None
     nombre: str | None = Field(None, min_length=3, max_length=255)
     descripcion_amenaza: str | None = Field(None, min_length=5)
@@ -47,7 +50,10 @@ class RiesgoUpdate(BaseModel):
 
 class RiesgoMitigacionRequest(BaseModel):
     """Payload para aplicar salvaguardas y recalcular riesgo residual."""
-    medidas_ids: list[uuid.UUID] = Field(..., min_length=1, description="Lista de IDs de medidas aplicadas")
+
+    medidas_ids: list[uuid.UUID] = Field(
+        ..., min_length=1, description="Lista de IDs de medidas aplicadas"
+    )
     probabilidad_residual: int = Field(..., ge=1, le=5)
     impacto_residual: int = Field(..., ge=1, le=5)
     estado: RiesgoEstado = RiesgoEstado.mitigado
@@ -55,6 +61,7 @@ class RiesgoMitigacionRequest(BaseModel):
 
 class RiesgoResponse(BaseModel):
     """Respuesta con datos completos del riesgo y medidas asociadas."""
+
     model_config = ConfigDict(from_attributes=True)
 
     id: uuid.UUID
@@ -87,6 +94,7 @@ class RiesgoResponse(BaseModel):
 
 class MatrizCalorCelda(BaseModel):
     """Celda de la matriz 5x5 de calor de riesgos."""
+
     probabilidad: int
     impacto: int
     cantidad_inherente: int = 0
@@ -96,6 +104,7 @@ class MatrizCalorCelda(BaseModel):
 
 class MatrizCalorResponse(BaseModel):
     """Estructura completa de la matriz de calor para visualización en frontend."""
+
     total_riesgos: int
     resumen_inherente: dict[str, int]
     resumen_residual: dict[str, int]

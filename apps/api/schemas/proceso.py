@@ -17,6 +17,7 @@ from models.proceso import FrecuenciaTratamiento
 
 class ProcesoBase(BaseModel):
     """Campos base de una actividad de tratamiento (RAT)."""
+
     nombre: str = Field(..., min_length=2, max_length=255)
     descripcion: str | None = None
     area_responsable: str = Field(..., min_length=2, max_length=100)
@@ -40,11 +41,13 @@ class ProcesoBase(BaseModel):
 
 class ProcesoCreate(ProcesoBase):
     """Payload para crear un nuevo proceso / RAT."""
+
     pass
 
 
 class ProcesoUpdate(BaseModel):
     """Payload para actualizar datos de un proceso."""
+
     nombre: str | None = Field(None, min_length=2, max_length=255)
     descripcion: str | None = None
     area_responsable: str | None = Field(None, min_length=2, max_length=100)
@@ -67,6 +70,7 @@ class ProcesoUpdate(BaseModel):
 
 class ProcesoResponse(BaseModel):
     """Respuesta con datos completos del proceso RAT y evaluación de Gran Escala."""
+
     model_config = ConfigDict(from_attributes=True)
 
     id: uuid.UUID

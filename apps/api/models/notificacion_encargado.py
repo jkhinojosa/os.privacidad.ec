@@ -24,6 +24,7 @@ if TYPE_CHECKING:
 
 class NotificacionEstado(enum.StrEnum):
     """Estados del proceso de notificación y confirmación del encargado."""
+
     enviada = "enviada"
     confirmada_recibida = "confirmada_recibida"
     ejecutada = "ejecutada"
@@ -33,6 +34,7 @@ class NotificacionEncargado(Base, TimestampMixin):
     """
     Representa una orden formal de replicación enviada a un encargado del tratamiento.
     """
+
     __tablename__ = "notificaciones_encargados"
 
     tenant_id: Mapped[uuid.UUID] = mapped_column(
@@ -96,4 +98,6 @@ class NotificacionEncargado(Base, TimestampMixin):
     )
 
     # Relación
-    solicitud: Mapped[SolicitudDerecho] = relationship("SolicitudDerecho", back_populates="notificaciones_encargados")
+    solicitud: Mapped[SolicitudDerecho] = relationship(
+        "SolicitudDerecho", back_populates="notificaciones_encargados"
+    )

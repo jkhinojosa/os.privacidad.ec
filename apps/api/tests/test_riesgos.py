@@ -9,7 +9,9 @@ from httpx import AsyncClient
 
 
 @pytest.mark.asyncio
-async def test_create_riesgo_and_mitigation_flow(client: AsyncClient, tenant_admin_auth_headers: dict):
+async def test_create_riesgo_and_mitigation_flow(
+    client: AsyncClient, tenant_admin_auth_headers: dict
+):
     """
     1. Registra un riesgo con Probabilidad=4, Impacto=4, Vulnerable=True -> Score=12.8 (Alto).
     2. Crea una medida de seguridad.
@@ -25,7 +27,9 @@ async def test_create_riesgo_and_mitigation_flow(client: AsyncClient, tenant_adm
         "probabilidad_inherente": 4,
         "impacto_inherente": 4,
     }
-    resp_rsk = await client.post("/api/v1/riesgos", json=riesgo_payload, headers=tenant_admin_auth_headers)
+    resp_rsk = await client.post(
+        "/api/v1/riesgos", json=riesgo_payload, headers=tenant_admin_auth_headers
+    )
     assert resp_rsk.status_code == 201
     rsk_data = resp_rsk.json()
     assert rsk_data["codigo"].startswith("RSK-")
@@ -40,7 +44,9 @@ async def test_create_riesgo_and_mitigation_flow(client: AsyncClient, tenant_adm
         "descripcion": "Segundo factor de autenticación resistente al phishing",
         "estado_implementacion": "implementada",
     }
-    resp_med = await client.post("/api/v1/medidas-seguridad", json=medida_payload, headers=tenant_admin_auth_headers)
+    resp_med = await client.post(
+        "/api/v1/medidas-seguridad", json=medida_payload, headers=tenant_admin_auth_headers
+    )
     medida_id = resp_med.json()["id"]
 
     # 3. Aplicar mitigación

@@ -58,7 +58,9 @@ def test_mtge_gran_escala_triggers_eipd():
         tiene_perfiles=True,
     )
     assert req_eipd is True
-    assert "salud" in motivo.lower() or "gran escala" in motivo.lower() or "perfiles" in motivo.lower()
+    assert (
+        "salud" in motivo.lower() or "gran escala" in motivo.lower() or "perfiles" in motivo.lower()
+    )
 
 
 def test_mtge_bajo_impacto_no_eipd():

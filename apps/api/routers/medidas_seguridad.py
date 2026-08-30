@@ -73,7 +73,9 @@ async def create_medida_seguridad(
     if not current_user.tenant_id and current_user.rol != UserRole.super_admin:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail={"error": {"code": "NO_TENANT", "message": "Usuario no pertenece a un tenant válido"}},
+            detail={
+                "error": {"code": "NO_TENANT", "message": "Usuario no pertenece a un tenant válido"}
+            },
         )
 
     tenant_id = current_user.tenant_id
@@ -136,7 +138,12 @@ async def get_medida_seguridad(
     if not medida:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail={"error": {"code": "MEDIDA_NOT_FOUND", "message": "Medida de seguridad no encontrada"}},
+            detail={
+                "error": {
+                    "code": "MEDIDA_NOT_FOUND",
+                    "message": "Medida de seguridad no encontrada",
+                }
+            },
         )
 
     return MedidaSeguridadResponse.model_validate(medida)
@@ -165,7 +172,12 @@ async def update_medida_seguridad(
     if not medida:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail={"error": {"code": "MEDIDA_NOT_FOUND", "message": "Medida de seguridad no encontrada"}},
+            detail={
+                "error": {
+                    "code": "MEDIDA_NOT_FOUND",
+                    "message": "Medida de seguridad no encontrada",
+                }
+            },
         )
 
     update_data = payload.model_dump(exclude_unset=True)

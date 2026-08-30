@@ -27,6 +27,7 @@ if TYPE_CHECKING:
 
 class EIPDEstado(enum.StrEnum):
     """Estados del ciclo de vida de una EIPD."""
+
     borrador = "borrador"
     en_revision_dpd = "en_revision_dpd"
     aprobada = "aprobada"
@@ -37,10 +38,9 @@ class EvaluacionImpacto(Base, TimestampMixin):
     """
     Representa una Evaluación de Impacto relativa a la Protección de Datos (EIPD / PIA).
     """
+
     __tablename__ = "evaluaciones_impacto"
-    __table_args__ = (
-        UniqueConstraint("tenant_id", "codigo", name="uq_eipd_tenant_codigo"),
-    )
+    __table_args__ = (UniqueConstraint("tenant_id", "codigo", name="uq_eipd_tenant_codigo"),)
 
     tenant_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),

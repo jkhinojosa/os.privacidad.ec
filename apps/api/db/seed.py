@@ -91,7 +91,9 @@ async def run_seed():
         ]
 
         for email, nombre, apellido, rol in demo_users:
-            stmt = select(Usuario).where(Usuario.tenant_id == tenant_demo.id, Usuario.email == email)
+            stmt = select(Usuario).where(
+                Usuario.tenant_id == tenant_demo.id, Usuario.email == email
+            )
             res = await db.execute(stmt)
             if not res.scalar_one_or_none():
                 user = Usuario(
@@ -108,7 +110,9 @@ async def run_seed():
                 logger.info(f"✅ Usuario creado: {email} ({rol.value})")
 
         # ── 4. Cliente Demo dentro del Tenant ─────────────────────
-        stmt = select(Cliente).where(Cliente.tenant_id == tenant_demo.id, Cliente.ruc == "1790012345001")
+        stmt = select(Cliente).where(
+            Cliente.tenant_id == tenant_demo.id, Cliente.ruc == "1790012345001"
+        )
         res = await db.execute(stmt)
         cliente = res.scalar_one_or_none()
         if not cliente:
@@ -125,10 +129,15 @@ async def run_seed():
             )
             db.add(cliente)
             await db.flush()
-            logger.info("✅ Cliente Demo creado: Empresa Farmacéutica Andina S.A. (RUC 1790012345001)")
+            logger.info(
+                "✅ Cliente Demo creado: Empresa Farmacéutica Andina S.A. (RUC 1790012345001)"
+            )
 
         # ── 5. Proceso Demo (RAT) con MTGE ────────────────────────
-        stmt = select(Proceso).where(Proceso.tenant_id == tenant_demo.id, Proceso.nombre == "Gestión de Pacientes y Ensayos Clínicos")
+        stmt = select(Proceso).where(
+            Proceso.tenant_id == tenant_demo.id,
+            Proceso.nombre == "Gestión de Pacientes y Ensayos Clínicos",
+        )
         res = await db.execute(stmt)
         proceso = res.scalar_one_or_none()
         tipo_datos = ["identificativos", "salud", "biométricos", "genéticos"]
@@ -168,7 +177,10 @@ async def run_seed():
             )
             db.add(proceso)
             await db.flush()
-            logger.info("✅ Proceso RAT creado: Gestión de Pacientes y Ensayos Clínicos (Puntaje MTGE: %s)", mtge_score)
+            logger.info(
+                "✅ Proceso RAT creado: Gestión de Pacientes y Ensayos Clínicos (Puntaje MTGE: %s)",
+                mtge_score,
+            )
 
         # ── 6. Medidas de Seguridad Demo (Salvaguardas) ───────────
         medidas_seed = [
@@ -208,7 +220,9 @@ async def run_seed():
 
         medidas_db = []
         for cod, tipo_m, nom, desc, est, resp in medidas_seed:
-            stmt = select(MedidaSeguridad).where(MedidaSeguridad.tenant_id == tenant_demo.id, MedidaSeguridad.codigo == cod)
+            stmt = select(MedidaSeguridad).where(
+                MedidaSeguridad.tenant_id == tenant_demo.id, MedidaSeguridad.codigo == cod
+            )
             res = await db.execute(stmt)
             med = res.scalar_one_or_none()
             if not med:
@@ -228,12 +242,18 @@ async def run_seed():
             medidas_db.append(med)
 
         # ── 7. Riesgos de Derechos y Libertades Demo ───────────────
-        stmt = select(Riesgo).where(Riesgo.tenant_id == tenant_demo.id, Riesgo.codigo == "RSK-2026-0001")
+        stmt = select(Riesgo).where(
+            Riesgo.tenant_id == tenant_demo.id, Riesgo.codigo == "RSK-2026-0001"
+        )
         res = await db.execute(stmt)
         riesgo1 = res.scalar_one_or_none()
         if not riesgo1:
-            score_inh, nivel_inh = calcular_score_y_nivel_riesgo(probabilidad=4, impacto=5, es_vulnerable=True)
-            score_res, nivel_res = calcular_score_y_nivel_riesgo(probabilidad=2, impacto=4, es_vulnerable=True)
+            score_inh, nivel_inh = calcular_score_y_nivel_riesgo(
+                probabilidad=4, impacto=5, es_vulnerable=True
+            )
+            score_res, nivel_res = calcular_score_y_nivel_riesgo(
+                probabilidad=2, impacto=4, es_vulnerable=True
+            )
             riesgo1 = Riesgo(
                 tenant_id=tenant_demo.id,
                 codigo="RSK-2026-0001",
@@ -257,10 +277,17 @@ async def run_seed():
             )
             db.add(riesgo1)
             await db.flush()
-            logger.info("✅ Riesgo Demo creado: RSK-2026-0001 (Score Inh: %s -> Res: %s)", score_inh, score_res)
+            logger.info(
+                "✅ Riesgo Demo creado: RSK-2026-0001 (Score Inh: %s -> Res: %s)",
+                score_inh,
+                score_res,
+            )
 
         # ── 8. Evaluación de Impacto Demo (EIPD / PIA) ─────────────
-        stmt = select(EvaluacionImpacto).where(EvaluacionImpacto.tenant_id == tenant_demo.id, EvaluacionImpacto.codigo == "EIPD-2026-0001")
+        stmt = select(EvaluacionImpacto).where(
+            EvaluacionImpacto.tenant_id == tenant_demo.id,
+            EvaluacionImpacto.codigo == "EIPD-2026-0001",
+        )
         res = await db.execute(stmt)
         eipd = res.scalar_one_or_none()
         if not eipd:
@@ -304,7 +331,9 @@ async def run_seed():
             logger.info("✅ Caso Demo creado: CAS-2026-0001 (Incidente Crítico)")
 
         # ── 10. Expediente Demo ───────────────────────────────────
-        stmt = select(Expediente).where(Expediente.tenant_id == tenant_demo.id, Expediente.codigo == "EXP-2026-0001")
+        stmt = select(Expediente).where(
+            Expediente.tenant_id == tenant_demo.id, Expediente.codigo == "EXP-2026-0001"
+        )
         res = await db.execute(stmt)
         expediente = res.scalar_one_or_none()
         if not expediente:
@@ -385,7 +414,10 @@ async def run_seed():
                 titular_identificacion="0923456789",
                 titular_email="mariana.benitez@email.ec",
                 motivo_solicitud="Actualización de correo electrónico y corrección de número de historia clínica erróneo.",
-                datos_a_modificar={"email_nuevo": "mariana.benitez.doc@email.ec", "historia_clinica": "HC-9921"},
+                datos_a_modificar={
+                    "email_nuevo": "mariana.benitez.doc@email.ec",
+                    "historia_clinica": "HC-9921",
+                },
                 fecha_recepcion=now - datetime.timedelta(days=5),
                 fecha_limite_sla=lim2,
                 dictamen_dpd="DICTAMEN FAVORABLE: Procede la rectificación tras verificar cédula de identidad y partida.",
@@ -410,7 +442,9 @@ async def run_seed():
             )
             db.add(notif)
             await db.flush()
-            logger.info("✅ Solicitud Demo creada: SOL-2026-0002 (Rectificación con Notificación a Encargado)")
+            logger.info(
+                "✅ Solicitud Demo creada: SOL-2026-0002 (Rectificación con Notificación a Encargado)"
+            )
 
         # 11.3 Solicitud de Portabilidad (Atendida con Entrega de Paquete)
         stmt = select(SolicitudDerecho).where(
@@ -447,8 +481,69 @@ async def run_seed():
             db.add(sol3)
             logger.info("✅ Solicitud Demo creada: SOL-2026-0003 (Portabilidad - Atendida)")
 
+        # ── 12. Brechas de Seguridad Demo (SPDP Art. 43 y 46) ─────
+        from models.brecha_seguridad import (
+            BrechaEstado,
+            BrechaSeguridad,
+            BrechaSeveridad,
+            VulnerabilidadTipo,
+        )
+
+        stmt = select(BrechaSeguridad).where(
+            BrechaSeguridad.tenant_id == tenant_demo.id, BrechaSeguridad.codigo == "BRC-2026-0001"
+        )
+        res = await db.execute(stmt)
+        brecha1 = res.scalar_one_or_none()
+        if not brecha1:
+            lim_spdp = calcular_fecha_limite_habiles(now - datetime.timedelta(days=4), 5)
+            lim_tit = calcular_fecha_limite_habiles(now - datetime.timedelta(days=2), 3)
+            brecha1 = BrechaSeguridad(
+                tenant_id=tenant_demo.id,
+                codigo="BRC-2026-0001",
+                caso_id=caso.id,
+                proceso_id=proceso.id,
+                titulo="Incidente de Fuga de Credenciales y Tráfico Anómalo Outbound",
+                descripcion="Detección por el SOC de intentos de exfiltración desde la base de datos de ensayos clínicos mediante credenciales de administrador comprometidas.",
+                tipo_vulneracion=VulnerabilidadTipo.confidencialidad,
+                severidad=BrechaSeveridad.critica,
+                estado=BrechaEstado.notificada_spdp,
+                sistemas_afectados="Servidor de Base de Datos PostgreSQL Médica (srv-ehr-db01.farmandina.local) y API Gateway Hospitalario.",
+                causa_presunta="Ataque de fuerza bruta y reutilización de credenciales privilegiadas sin MFA activo.",
+                colectivos_afectados=["Pacientes de Ensayos Clínicos", "Médicos Investigadores"],
+                volumen_titulares_estimado=2500,
+                categorias_datos_expuestas=[
+                    "identificativos",
+                    "salud",
+                    "diagnósticos",
+                    "consentimientos",
+                ],
+                fecha_deteccion=now - datetime.timedelta(days=4),
+                fecha_limite_spdp=lim_spdp,
+                notificada_a_spdp=True,
+                fecha_notificacion_spdp=now - datetime.timedelta(days=1),
+                numero_radicado_spdp="SPDP-EXP-2026-004412-E",
+                notificada_a_arcotel=True,
+                requiere_notificacion_titulares=True,
+                fecha_calificacion_riesgo=now - datetime.timedelta(days=2),
+                fecha_limite_titulares=lim_tit,
+                notificada_a_titulares=True,
+                fecha_notificacion_titulares=now - datetime.timedelta(days=1),
+                canal_notificacion_titulares="correo_electronico_individual_y_comunicado_portal",
+                medidas_contencion_inmediatas="Aislamiento lógico inmediato del servidor, revocación total de llaves SSH y tokens API, reseteo forzado de contraseñas de todos los administradores.",
+                medidas_remediacion_previstas="Implementación obligatoria de MFA WebAuthn/FIDO2, segmentación de subredes VLAN con IPS inline y cifrado a nivel de columna con Vault.",
+                dictamen_dpd="El incidente involucró datos sensibles de salud por lo que se procedió con la notificación obligatoria a la SPDP dentro de los 5 días y a los 2,500 titulares dentro de los 3 días de ley.",
+                evaluacion_riesgo_titulares="Riesgo Alto calificado debido a la potencial exposición de diagnósticos clínicos. Mitigado por el rápido aislamiento y ausencia de evidencia de publicación en foros externos.",
+                created_by=super_admin.id,
+            )
+            db.add(brecha1)
+            logger.info(
+                "✅ Brecha de Seguridad Demo creada: BRC-2026-0001 (Notificada a SPDP y Titulares)"
+            )
+
         await db.commit()
-        logger.info("🎉 Seed completado exitosamente con entidades de Fase 1, Fase 2, Fase 3 y Fase 4.")
+        logger.info(
+            "🎉 Seed completado exitosamente con entidades de Fase 1, Fase 2, Fase 3, Fase 4 y Fase 5."
+        )
 
 
 if __name__ == "__main__":

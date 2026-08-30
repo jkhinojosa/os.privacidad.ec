@@ -81,10 +81,23 @@ def calcular_puntaje_mtge(
 
     # 2. Categorías y Sensibilidad de Datos
     datos_str = str(tipo_datos or "").lower()
-    sensibles_keywords = ["salud", "biom", "genet", "sexual", "religio", "polit", "etni", "menor", "nino", "discapacidad"]
+    sensibles_keywords = [
+        "salud",
+        "biom",
+        "genet",
+        "sexual",
+        "religio",
+        "polit",
+        "etni",
+        "menor",
+        "nino",
+        "discapacidad",
+    ]
     if any(k in datos_str for k in sensibles_keywords):
         puntaje += 3.0
-    elif any(k in datos_str for k in ["financier", "bancar", "credit", "laboral", "penal", "infraccion"]):
+    elif any(
+        k in datos_str for k in ["financier", "bancar", "credit", "laboral", "penal", "infraccion"]
+    ):
         puntaje += 2.0
     else:
         puntaje += 1.0
@@ -117,10 +130,16 @@ def evaluar_obligatoriedad_eipd(
     es_salud_o_sensible = any(k in datos_str for k in ["salud", "biom", "genet", "menor", "nino"])
 
     if es_salud_o_sensible and puntaje_mtge >= 4.0:
-        return True, "Calificación directa obligatoria: Tratamiento de datos de salud / sensibles / menores de edad."
+        return (
+            True,
+            "Calificación directa obligatoria: Tratamiento de datos de salud / sensibles / menores de edad.",
+        )
 
     if tiene_perfiles:
-        return True, "Mandato legal Art. 42 lit. a LOPDP: Evaluación sistemática y elaboración de perfiles."
+        return (
+            True,
+            "Mandato legal Art. 42 lit. a LOPDP: Evaluación sistemática y elaboración de perfiles.",
+        )
 
     if puntaje_mtge >= 6.0:
         return True, f"Supera el umbral de Gran Escala MTGE ({puntaje_mtge} >= 6.0 puntos)."

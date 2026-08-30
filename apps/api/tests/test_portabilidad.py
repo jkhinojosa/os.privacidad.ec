@@ -21,10 +21,14 @@ async def test_exportar_portabilidad_json(client: AsyncClient, tenant_admin_auth
         "motivo_solicitud": "Portabilidad de historial médico y consentimientos",
         "datos_a_modificar": {
             "perfil": {"nombre": "Esteban Cueva", "especialidad": "Cardiología"},
-            "consentimientos": [{"finalidad": "Investigación", "otorgado": True, "fecha": "2026-01-15"}],
+            "consentimientos": [
+                {"finalidad": "Investigación", "otorgado": True, "fecha": "2026-01-15"}
+            ],
         },
     }
-    resp_create = await client.post("/api/v1/solicitudes-derechos", json=sol_payload, headers=tenant_admin_auth_headers)
+    resp_create = await client.post(
+        "/api/v1/solicitudes-derechos", json=sol_payload, headers=tenant_admin_auth_headers
+    )
     solicitud_id = resp_create.json()["id"]
 
     # Descargar JSON
@@ -55,7 +59,9 @@ async def test_exportar_portabilidad_csv(client: AsyncClient, tenant_admin_auth_
             {"transaccion_id": "TX-2", "monto": "230.50", "fecha": "2026-06-12"},
         ],
     }
-    resp_create = await client.post("/api/v1/solicitudes-derechos", json=sol_payload, headers=tenant_admin_auth_headers)
+    resp_create = await client.post(
+        "/api/v1/solicitudes-derechos", json=sol_payload, headers=tenant_admin_auth_headers
+    )
     solicitud_id = resp_create.json()["id"]
 
     # Descargar CSV

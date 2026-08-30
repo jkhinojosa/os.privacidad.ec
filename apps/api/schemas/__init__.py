@@ -11,6 +11,17 @@ from schemas.auth import (
     TokenResponse,
     UserProfileResponse,
 )
+from schemas.brecha_seguridad import (
+    BrechaCalificacionRiesgoRequest,
+    BrechaCierreRequest,
+    BrechaInformeOficialSPDPResponse,
+    BrechaNotificacionSPDPRequest,
+    BrechaNotificacionTitularesRequest,
+    BrechaResumenSLAResponse,
+    BrechaSeguridadCreate,
+    BrechaSeguridadResponse,
+    BrechaSeguridadUpdate,
+)
 from schemas.caso import (
     CasoCreate,
     CasoResponse,
@@ -119,4 +130,13 @@ __all__ = [
     "NotificacionEncargadoCreate",
     "NotificacionEncargadoConfirmacion",
     "NotificacionEncargadoResponse",
+    "BrechaSeguridadCreate",
+    "BrechaSeguridadUpdate",
+    "BrechaCalificacionRiesgoRequest",
+    "BrechaNotificacionSPDPRequest",
+    "BrechaNotificacionTitularesRequest",
+    "BrechaCierreRequest",
+    "BrechaSeguridadResponse",
+    "BrechaInformeOficialSPDPResponse",
+    "BrechaResumenSLAResponse",
 ]

@@ -18,13 +18,13 @@ from typing import Any
 # Feriados nacionales oficiales recurrentes de Ecuador (Mes, Día)
 # Nota: Para días móviles de Carnaval o Viernes Santo se calculan dinámicamente o se incluyen fechas fijas.
 FERIADOS_ECUADOR_FIJOS: set[tuple[int, int]] = {
-    (1, 1),    # Año Nuevo
-    (5, 1),    # Día del Trabajo
-    (5, 24),   # Batalla de Pichincha
-    (8, 10),   # Primer Grito de Independencia
-    (10, 9),   # Independencia de Guayaquil
-    (11, 2),   # Día de los Difuntos
-    (11, 3),   # Independencia de Cuenca
+    (1, 1),  # Año Nuevo
+    (5, 1),  # Día del Trabajo
+    (5, 24),  # Batalla de Pichincha
+    (8, 10),  # Primer Grito de Independencia
+    (10, 9),  # Independencia de Guayaquil
+    (11, 2),  # Día de los Difuntos
+    (11, 3),  # Independencia de Cuenca
     (12, 25),  # Navidad
 }
 

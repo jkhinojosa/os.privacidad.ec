@@ -28,7 +28,9 @@ async def test_fase4_cross_tenant_isolation(client: AsyncClient, multi_tenant_se
         "titular_email": "directivo@alpha.ec",
         "motivo_solicitud": "Oposición a la elaboración de perfiles comerciales automatizados.",
     }
-    resp_alpha = await client.post("/api/v1/solicitudes-derechos", json=sol_payload, headers=headers_alpha)
+    resp_alpha = await client.post(
+        "/api/v1/solicitudes-derechos", json=sol_payload, headers=headers_alpha
+    )
     assert resp_alpha.status_code == 201
     sol_alpha_id = resp_alpha.json()["id"]
 
@@ -51,5 +53,12 @@ async def test_fase4_cross_tenant_isolation(client: AsyncClient, multi_tenant_se
     assert not any(s["id"] == sol_alpha_id for s in beta_sols)
 
     # ── 3. Tenant Beta intenta acceso directo por ID -> 404 ───────
-    assert (await client.get(f"/api/v1/solicitudes-derechos/{sol_alpha_id}", headers=headers_beta)).status_code == 404
-    assert (await client.get(f"/api/v1/solicitudes-derechos/{sol_alpha_id}/exportar-portabilidad", headers=headers_beta)).status_code == 404
+    assert (
+        await client.get(f"/api/v1/solicitudes-derechos/{sol_alpha_id}", headers=headers_beta)
+    ).status_code == 404
+    assert (
+        await client.get(
+            f"/api/v1/solicitudes-derechos/{sol_alpha_id}/exportar-portabilidad",
+            headers=headers_beta,
+        )
+    ).status_code == 404

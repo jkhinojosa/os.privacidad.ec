@@ -24,6 +24,7 @@ if TYPE_CHECKING:
 
 class MedidaTipo(enum.StrEnum):
     """Clasificación de medidas de seguridad según la Guía SPDP 2026."""
+
     tecnica = "tecnica"
     organizativa = "organizativa"
     juridica = "juridica"
@@ -33,6 +34,7 @@ class MedidaTipo(enum.StrEnum):
 
 class MedidaEstado(enum.StrEnum):
     """Estado de implementación de la salvaguarda."""
+
     planificada = "planificada"
     en_proceso = "en_proceso"
     implementada = "implementada"
@@ -43,10 +45,9 @@ class MedidaSeguridad(Base, TimestampMixin):
     """
     Representa una medida o control de seguridad implementado para mitigar riesgos.
     """
+
     __tablename__ = "medidas_seguridad"
-    __table_args__ = (
-        UniqueConstraint("tenant_id", "codigo", name="uq_medidas_tenant_codigo"),
-    )
+    __table_args__ = (UniqueConstraint("tenant_id", "codigo", name="uq_medidas_tenant_codigo"),)
 
     tenant_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),

@@ -30,7 +30,9 @@ async def test_eipd_creation_approval_and_report_flow(
         "frecuencia_tratamiento": "continua",
         "volumen_titulares_estimado": 50000,
     }
-    resp_proc = await client.post("/api/v1/procesos", json=proc_payload, headers=tenant_admin_auth_headers)
+    resp_proc = await client.post(
+        "/api/v1/procesos", json=proc_payload, headers=tenant_admin_auth_headers
+    )
     assert resp_proc.status_code == 201
     proceso_id = resp_proc.json()["id"]
     assert resp_proc.json()["requiere_eipd"] is True
@@ -42,7 +44,9 @@ async def test_eipd_creation_approval_and_report_flow(
         "descripcion_sistematica": "Flujo de ingesta de variables financieras, procesamiento mediante algoritmos de Machine Learning y emisión de dictamen automatizado.",
         "justificacion_necesidad_proporcionalidad": "El tratamiento es necesario para el otorgamiento responsable de crédito. Se minimizan las variables no indispensables.",
     }
-    resp_eipd = await client.post("/api/v1/eipds", json=eipd_payload, headers=tenant_admin_auth_headers)
+    resp_eipd = await client.post(
+        "/api/v1/eipds", json=eipd_payload, headers=tenant_admin_auth_headers
+    )
     assert resp_eipd.status_code == 201
     eipd_data = resp_eipd.json()
     assert eipd_data["codigo"].startswith("EIPD-")
@@ -64,7 +68,9 @@ async def test_eipd_creation_approval_and_report_flow(
     assert resp_aprob.json()["fecha_aprobacion"] is not None
 
     # 4. Generar reporte consolidado oficial
-    resp_rep = await client.get(f"/api/v1/eipds/{eipd_id}/reporte", headers=tenant_admin_auth_headers)
+    resp_rep = await client.get(
+        f"/api/v1/eipds/{eipd_id}/reporte", headers=tenant_admin_auth_headers
+    )
     assert resp_rep.status_code == 200
     rep_data = resp_rep.json()
     assert rep_data["eipd"]["id"] == eipd_id

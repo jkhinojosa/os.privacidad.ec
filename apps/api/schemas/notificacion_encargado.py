@@ -16,27 +16,36 @@ from models.notificacion_encargado import NotificacionEstado
 
 class NotificacionEncargadoBase(BaseModel):
     """Campos base de una orden de réplica a un encargado."""
+
     encargado_nombre: str = Field(..., min_length=2, max_length=255)
     encargado_email: EmailStr
     tipo_accion_requerida: str = Field(
-        ..., min_length=3, max_length=50, description="rectificar, actualizar, suprimir, suspender, oponerse"
+        ...,
+        min_length=3,
+        max_length=50,
+        description="rectificar, actualizar, suprimir, suspender, oponerse",
     )
     instrucciones_tecnicas: str = Field(..., min_length=10)
 
 
 class NotificacionEncargadoCreate(NotificacionEncargadoBase):
     """Payload para enviar orden a un encargado."""
+
     pass
 
 
 class NotificacionEncargadoConfirmacion(BaseModel):
     """Payload para registrar confirmación de ejecución del encargado."""
+
     estado: NotificacionEstado = NotificacionEstado.ejecutada
-    evidencia_respuesta: str = Field(..., min_length=5, description="Constancia o certificado de ejecución técnica")
+    evidencia_respuesta: str = Field(
+        ..., min_length=5, description="Constancia o certificado de ejecución técnica"
+    )
 
 
 class NotificacionEncargadoResponse(BaseModel):
     """Respuesta con datos de la notificación al encargado."""
+
     model_config = ConfigDict(from_attributes=True)
 
     id: uuid.UUID

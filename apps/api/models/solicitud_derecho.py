@@ -30,6 +30,7 @@ if TYPE_CHECKING:
 
 class DerechoTipo(enum.StrEnum):
     """Catálogo Oficial de Derechos de los Titulares conforme a la LOPDP."""
+
     informacion = "informacion"  # Art. 12
     acceso = "acceso"  # Art. 13
     rectificacion_actualizacion = "rectificacion_actualizacion"  # Art. 14
@@ -44,6 +45,7 @@ class DerechoTipo(enum.StrEnum):
 
 class SolicitudEstado(enum.StrEnum):
     """Estados del flujo procedimental de atención a solicitudes LOPDP."""
+
     recibida = "recibida"
     en_subsanacion = "en_subsanacion"
     en_analisis = "en_analisis"
@@ -58,6 +60,7 @@ class SolicitudEstado(enum.StrEnum):
 
 class CanalRecepcion(enum.StrEnum):
     """Canal por el cual ingresó la solicitud."""
+
     formulario_web = "formulario_web"
     correo_electronico = "correo_electronico"
     presencial_ventanilla = "presencial_ventanilla"
@@ -68,10 +71,9 @@ class SolicitudDerecho(Base, TimestampMixin):
     """
     Representa una solicitud de ejercicio de derechos presentada por un titular de datos.
     """
+
     __tablename__ = "solicitudes_derechos"
-    __table_args__ = (
-        UniqueConstraint("tenant_id", "codigo", name="uq_solicitud_tenant_codigo"),
-    )
+    __table_args__ = (UniqueConstraint("tenant_id", "codigo", name="uq_solicitud_tenant_codigo"),)
 
     tenant_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
@@ -187,16 +189,22 @@ class SolicitudDerecho(Base, TimestampMixin):
     motivo_negativa: Mapped[str | None] = mapped_column(
         Text, nullable=True, doc="Fundamentación jurídica en caso de negativa total o parcial"
     )
-    fecha_resolucion: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    fecha_resolucion: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
     resuelto_por: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True), ForeignKey("usuarios.id", ondelete="SET NULL"), nullable=True
     )
 
     # ── Ejecución Técnica y Notificación a Encargados ─────────
-    ejecucion_tecnica_completada: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    ejecucion_tecnica_completada: Mapped[bool] = mapped_column(
+        Boolean, default=False, nullable=False
+    )
     fecha_ejecucion: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     resultado_ejecucion: Mapped[str | None] = mapped_column(
-        Text, nullable=True, doc="Evidencia o confirmación del cambio/bloqueo/borrado en los sistemas"
+        Text,
+        nullable=True,
+        doc="Evidencia o confirmación del cambio/bloqueo/borrado en los sistemas",
     )
     fecha_cierre: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 

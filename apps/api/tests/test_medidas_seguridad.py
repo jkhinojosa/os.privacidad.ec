@@ -9,7 +9,9 @@ from httpx import AsyncClient
 
 
 @pytest.mark.asyncio
-async def test_create_and_list_medidas_seguridad(client: AsyncClient, tenant_admin_auth_headers: dict):
+async def test_create_and_list_medidas_seguridad(
+    client: AsyncClient, tenant_admin_auth_headers: dict
+):
     """TenantAdmin puede registrar salvaguardas y listarlas con código MED-YYYY-NNNN."""
     payload = {
         "tipo": "tecnica",
@@ -18,7 +20,9 @@ async def test_create_and_list_medidas_seguridad(client: AsyncClient, tenant_adm
         "estado_implementacion": "implementada",
         "responsable": "Ing. Seguridad",
     }
-    resp = await client.post("/api/v1/medidas-seguridad", json=payload, headers=tenant_admin_auth_headers)
+    resp = await client.post(
+        "/api/v1/medidas-seguridad", json=payload, headers=tenant_admin_auth_headers
+    )
     assert resp.status_code == 201
     data = resp.json()
     assert data["codigo"].startswith("MED-")
@@ -31,7 +35,9 @@ async def test_create_and_list_medidas_seguridad(client: AsyncClient, tenant_adm
     assert any(m["id"] == medida_id for m in resp_list.json())
 
     # Consultar por ID
-    resp_get = await client.get(f"/api/v1/medidas-seguridad/{medida_id}", headers=tenant_admin_auth_headers)
+    resp_get = await client.get(
+        f"/api/v1/medidas-seguridad/{medida_id}", headers=tenant_admin_auth_headers
+    )
     assert resp_get.status_code == 200
     assert resp_get.json()["nombre"] == payload["nombre"]
 
@@ -45,7 +51,9 @@ async def test_update_medida_seguridad(client: AsyncClient, tenant_admin_auth_he
         "descripcion": "Talleres para empleados sobre protección de datos",
         "estado_implementacion": "planificada",
     }
-    resp_create = await client.post("/api/v1/medidas-seguridad", json=payload, headers=tenant_admin_auth_headers)
+    resp_create = await client.post(
+        "/api/v1/medidas-seguridad", json=payload, headers=tenant_admin_auth_headers
+    )
     medida_id = resp_create.json()["id"]
 
     # Actualizar a 'verificada'

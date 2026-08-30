@@ -81,18 +81,27 @@ async def create_eipd(
     if not current_user.tenant_id and current_user.rol != UserRole.super_admin:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail={"error": {"code": "NO_TENANT", "message": "Usuario no pertenece a un tenant válido"}},
+            detail={
+                "error": {"code": "NO_TENANT", "message": "Usuario no pertenece a un tenant válido"}
+            },
         )
 
     tenant_id = current_user.tenant_id
 
     # Validar que el proceso existe en el tenant
-    stmt_proc = select(Proceso).where(Proceso.id == payload.proceso_id, Proceso.tenant_id == tenant_id)
+    stmt_proc = select(Proceso).where(
+        Proceso.id == payload.proceso_id, Proceso.tenant_id == tenant_id
+    )
     proc_res = await db.execute(stmt_proc)
     if not proc_res.scalar_one_or_none():
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail={"error": {"code": "PROCESO_NOT_FOUND", "message": "El proceso asociado no existe en este tenant"}},
+            detail={
+                "error": {
+                    "code": "PROCESO_NOT_FOUND",
+                    "message": "El proceso asociado no existe en este tenant",
+                }
+            },
         )
 
     codigo = await generate_next_codigo(db, tenant_id, "EIPD")
@@ -154,7 +163,12 @@ async def get_eipd(
     if not eipd:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail={"error": {"code": "EIPD_NOT_FOUND", "message": "Evaluación de Impacto no encontrada"}},
+            detail={
+                "error": {
+                    "code": "EIPD_NOT_FOUND",
+                    "message": "Evaluación de Impacto no encontrada",
+                }
+            },
         )
 
     return EIPDResponse.model_validate(eipd)
@@ -183,7 +197,12 @@ async def update_eipd(
     if not eipd:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail={"error": {"code": "EIPD_NOT_FOUND", "message": "Evaluación de Impacto no encontrada"}},
+            detail={
+                "error": {
+                    "code": "EIPD_NOT_FOUND",
+                    "message": "Evaluación de Impacto no encontrada",
+                }
+            },
         )
 
     update_data = payload.model_dump(exclude_unset=True)
@@ -230,7 +249,12 @@ async def approve_eipd(
     if not eipd:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail={"error": {"code": "EIPD_NOT_FOUND", "message": "Evaluación de Impacto no encontrada"}},
+            detail={
+                "error": {
+                    "code": "EIPD_NOT_FOUND",
+                    "message": "Evaluación de Impacto no encontrada",
+                }
+            },
         )
 
     eipd.dictamen_dpd = payload.dictamen_dpd
@@ -281,7 +305,12 @@ async def generate_eipd_official_report(
     if not eipd:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail={"error": {"code": "EIPD_NOT_FOUND", "message": "Evaluación de Impacto no encontrada"}},
+            detail={
+                "error": {
+                    "code": "EIPD_NOT_FOUND",
+                    "message": "Evaluación de Impacto no encontrada",
+                }
+            },
         )
 
     # Cargar Proceso RAT

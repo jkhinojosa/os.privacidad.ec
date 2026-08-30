@@ -6,6 +6,12 @@ Importa todos los modelos para que Alembic y SQLAlchemy registren sus metadatos.
 
 from db.base import Base, TimestampMixin
 from models.audit_log import AuditLog
+from models.brecha_seguridad import (
+    BrechaEstado,
+    BrechaSeguridad,
+    BrechaSeveridad,
+    VulnerabilidadTipo,
+)
 from models.caso import Caso, CasoEstado, CasoPrioridad, CasoTipo
 from models.cliente import Cliente
 from models.eipd import EIPDEstado, EvaluacionImpacto
@@ -66,4 +72,8 @@ __all__ = [
     "CanalRecepcion",
     "NotificacionEncargado",
     "NotificacionEstado",
+    "BrechaSeguridad",
+    "VulnerabilidadTipo",
+    "BrechaSeveridad",
+    "BrechaEstado",
 ]

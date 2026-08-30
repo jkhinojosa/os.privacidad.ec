@@ -16,6 +16,7 @@ from models.medida_seguridad import MedidaEstado, MedidaTipo
 
 class MedidaSeguridadBase(BaseModel):
     """Campos base de una medida de seguridad."""
+
     tipo: MedidaTipo
     nombre: str = Field(..., min_length=3, max_length=255)
     descripcion: str = Field(..., min_length=5)
@@ -26,11 +27,13 @@ class MedidaSeguridadBase(BaseModel):
 
 class MedidaSeguridadCreate(MedidaSeguridadBase):
     """Payload para crear una nueva medida de seguridad."""
+
     pass
 
 
 class MedidaSeguridadUpdate(BaseModel):
     """Payload para actualizar una medida de seguridad."""
+
     tipo: MedidaTipo | None = None
     nombre: str | None = Field(None, min_length=3, max_length=255)
     descripcion: str | None = Field(None, min_length=5)
@@ -42,6 +45,7 @@ class MedidaSeguridadUpdate(BaseModel):
 
 class MedidaSeguridadResponse(BaseModel):
     """Respuesta con datos de una medida de seguridad."""
+
     model_config = ConfigDict(from_attributes=True)
 
     id: uuid.UUID

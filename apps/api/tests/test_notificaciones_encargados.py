@@ -23,7 +23,9 @@ async def test_notificar_encargado_flow(client: AsyncClient, tenant_admin_auth_h
         "titular_email": "gabriel.salgado@email.ec",
         "motivo_solicitud": "Solicito la supresión de mis datos tras darme de baja del servicio.",
     }
-    resp_create = await client.post("/api/v1/solicitudes-derechos", json=sol_payload, headers=tenant_admin_auth_headers)
+    resp_create = await client.post(
+        "/api/v1/solicitudes-derechos", json=sol_payload, headers=tenant_admin_auth_headers
+    )
     solicitud_id = resp_create.json()["id"]
 
     # 1.1 Aprobar
@@ -52,7 +54,9 @@ async def test_notificar_encargado_flow(client: AsyncClient, tenant_admin_auth_h
     assert notif_data["estado"] == "enviada"
 
     # 3. Verificar en solicitud
-    resp_get = await client.get(f"/api/v1/solicitudes-derechos/{solicitud_id}", headers=tenant_admin_auth_headers)
+    resp_get = await client.get(
+        f"/api/v1/solicitudes-derechos/{solicitud_id}", headers=tenant_admin_auth_headers
+    )
     assert resp_get.status_code == 200
     assert resp_get.json()["estado"] == "notificada_encargados"
     assert len(resp_get.json()["notificaciones_encargados"]) == 1

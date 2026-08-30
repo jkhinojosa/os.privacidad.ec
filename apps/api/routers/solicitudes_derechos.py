@@ -130,7 +130,9 @@ async def list_solicitudes_derechos(
     """
     Lista las solicitudes de ejercicio de derechos del tenant con estado de SLA en tiempo real.
     """
-    stmt = select(SolicitudDerecho).options(selectinload(SolicitudDerecho.notificaciones_encargados))
+    stmt = select(SolicitudDerecho).options(
+        selectinload(SolicitudDerecho.notificaciones_encargados)
+    )
     if current_user.rol != UserRole.super_admin and current_user.tenant_id:
         stmt = stmt.where(SolicitudDerecho.tenant_id == current_user.tenant_id)
 
@@ -165,7 +167,9 @@ async def create_solicitud_derecho(
     if not current_user.tenant_id and current_user.rol != UserRole.super_admin:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail={"error": {"code": "NO_TENANT", "message": "Usuario no pertenece a un tenant válido"}},
+            detail={
+                "error": {"code": "NO_TENANT", "message": "Usuario no pertenece a un tenant válido"}
+            },
         )
 
     tenant_id = current_user.tenant_id
@@ -262,7 +266,12 @@ async def get_solicitud_derecho(
     if not solicitud:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail={"error": {"code": "SOLICITUD_NOT_FOUND", "message": "Solicitud de derechos no encontrada"}},
+            detail={
+                "error": {
+                    "code": "SOLICITUD_NOT_FOUND",
+                    "message": "Solicitud de derechos no encontrada",
+                }
+            },
         )
 
     return _enrich_solicitud_response(solicitud)
@@ -295,7 +304,12 @@ async def update_solicitud_derecho(
     if not solicitud:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail={"error": {"code": "SOLICITUD_NOT_FOUND", "message": "Solicitud de derechos no encontrada"}},
+            detail={
+                "error": {
+                    "code": "SOLICITUD_NOT_FOUND",
+                    "message": "Solicitud de derechos no encontrada",
+                }
+            },
         )
 
     update_data = payload.model_dump(exclude_unset=True)
@@ -347,7 +361,12 @@ async def request_solicitud_subsanacion(
     if not solicitud:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail={"error": {"code": "SOLICITUD_NOT_FOUND", "message": "Solicitud de derechos no encontrada"}},
+            detail={
+                "error": {
+                    "code": "SOLICITUD_NOT_FOUND",
+                    "message": "Solicitud de derechos no encontrada",
+                }
+            },
         )
 
     validate_solicitud_transition(solicitud.estado, SolicitudEstado.en_subsanacion)
@@ -401,20 +420,32 @@ async def apply_solicitud_prorroga(
     if not solicitud:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail={"error": {"code": "SOLICITUD_NOT_FOUND", "message": "Solicitud de derechos no encontrada"}},
+            detail={
+                "error": {
+                    "code": "SOLICITUD_NOT_FOUND",
+                    "message": "Solicitud de derechos no encontrada",
+                }
+            },
         )
 
     if solicitud.prorroga_aplicada:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail={"error": {"code": "ALREADY_PRORROGADA", "message": "La solicitud ya fue objeto de prórroga legal previa (máximo 1 prórroga)"}},
+            detail={
+                "error": {
+                    "code": "ALREADY_PRORROGADA",
+                    "message": "La solicitud ya fue objeto de prórroga legal previa (máximo 1 prórroga)",
+                }
+            },
         )
 
     validate_solicitud_transition(solicitud.estado, SolicitudEstado.prorrogada)
 
     now = datetime.datetime.now(datetime.UTC)
     # Sumar 15 días hábiles adicionales a la fecha límite original
-    nueva_fecha_limite = calcular_fecha_limite_habiles(solicitud.fecha_limite_sla, dias_habiles=payload.dias_prorroga_habiles)
+    nueva_fecha_limite = calcular_fecha_limite_habiles(
+        solicitud.fecha_limite_sla, dias_habiles=payload.dias_prorroga_habiles
+    )
 
     solicitud.estado = SolicitudEstado.prorrogada
     solicitud.prorroga_aplicada = True
@@ -469,7 +500,12 @@ async def resolve_solicitud_derecho(
     if not solicitud:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail={"error": {"code": "SOLICITUD_NOT_FOUND", "message": "Solicitud de derechos no encontrada"}},
+            detail={
+                "error": {
+                    "code": "SOLICITUD_NOT_FOUND",
+                    "message": "Solicitud de derechos no encontrada",
+                }
+            },
         )
 
     target_estado = SolicitudEstado.aprobada if payload.aprobada else SolicitudEstado.denegada
@@ -478,7 +514,12 @@ async def resolve_solicitud_derecho(
     if not payload.aprobada and not payload.motivo_negativa:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail={"error": {"code": "MOTIVO_NEGATIVA_REQUIRED", "message": "Es legalmente obligatorio fundamentar el motivo de la negativa"}},
+            detail={
+                "error": {
+                    "code": "MOTIVO_NEGATIVA_REQUIRED",
+                    "message": "Es legalmente obligatorio fundamentar el motivo de la negativa",
+                }
+            },
         )
 
     now = datetime.datetime.now(datetime.UTC)
@@ -540,7 +581,12 @@ async def execute_solicitud_derecho(
     if not solicitud:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail={"error": {"code": "SOLICITUD_NOT_FOUND", "message": "Solicitud de derechos no encontrada"}},
+            detail={
+                "error": {
+                    "code": "SOLICITUD_NOT_FOUND",
+                    "message": "Solicitud de derechos no encontrada",
+                }
+            },
         )
 
     now = datetime.datetime.now(datetime.UTC)
@@ -570,7 +616,11 @@ async def execute_solicitud_derecho(
     return _enrich_solicitud_response(solicitud)
 
 
-@router.post("/{solicitud_id}/notificar-encargados", response_model=NotificacionEncargadoResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/{solicitud_id}/notificar-encargados",
+    response_model=NotificacionEncargadoResponse,
+    status_code=status.HTTP_201_CREATED,
+)
 async def notify_encargado(
     solicitud_id: uuid.UUID,
     payload: NotificacionEncargadoCreate,
@@ -593,7 +643,12 @@ async def notify_encargado(
     if not solicitud:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail={"error": {"code": "SOLICITUD_NOT_FOUND", "message": "Solicitud de derechos no encontrada"}},
+            detail={
+                "error": {
+                    "code": "SOLICITUD_NOT_FOUND",
+                    "message": "Solicitud de derechos no encontrada",
+                }
+            },
         )
 
     now = datetime.datetime.now(datetime.UTC)
@@ -610,7 +665,10 @@ async def notify_encargado(
     )
     db.add(notificacion)
 
-    if solicitud.estado == SolicitudEstado.aprobada or solicitud.estado == SolicitudEstado.en_ejecucion:
+    if (
+        solicitud.estado == SolicitudEstado.aprobada
+        or solicitud.estado == SolicitudEstado.en_ejecucion
+    ):
         solicitud.estado = SolicitudEstado.notificada_encargados
 
     await db.flush()
@@ -658,7 +716,12 @@ async def export_portabilidad_package(
     if not solicitud:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail={"error": {"code": "SOLICITUD_NOT_FOUND", "message": "Solicitud de derechos no encontrada"}},
+            detail={
+                "error": {
+                    "code": "SOLICITUD_NOT_FOUND",
+                    "message": "Solicitud de derechos no encontrada",
+                }
+            },
         )
 
     datos = solicitud.datos_a_modificar or {

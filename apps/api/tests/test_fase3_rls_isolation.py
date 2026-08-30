@@ -85,6 +85,12 @@ async def test_fase3_cross_tenant_isolation(client: AsyncClient, multi_tenant_se
     assert not any(e["id"] == eipd_alpha_id for e in beta_eipds)
 
     # ── 3. Tenant Beta intenta acceso directo por ID -> 404 ───────
-    assert (await client.get(f"/api/v1/medidas-seguridad/{med_alpha_id}", headers=headers_beta)).status_code == 404
-    assert (await client.get(f"/api/v1/riesgos/{rsk_alpha_id}", headers=headers_beta)).status_code == 404
-    assert (await client.get(f"/api/v1/eipds/{eipd_alpha_id}", headers=headers_beta)).status_code == 404
+    assert (
+        await client.get(f"/api/v1/medidas-seguridad/{med_alpha_id}", headers=headers_beta)
+    ).status_code == 404
+    assert (
+        await client.get(f"/api/v1/riesgos/{rsk_alpha_id}", headers=headers_beta)
+    ).status_code == 404
+    assert (
+        await client.get(f"/api/v1/eipds/{eipd_alpha_id}", headers=headers_beta)
+    ).status_code == 404

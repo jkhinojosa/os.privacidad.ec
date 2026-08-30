@@ -29,9 +29,14 @@ async def test_solicitud_derecho_full_lifecycle(
         "titular_email": "carlos.zambrano@empresa.ec",
         "titular_telefono": "0987654321",
         "motivo_solicitud": "Solicito corregir mi dirección domiciliaria y número de teléfono celular registrados.",
-        "datos_a_modificar": {"direccion_nueva": "Av. Amazonas y Colón, Quito", "celular_nuevo": "0987654321"},
+        "datos_a_modificar": {
+            "direccion_nueva": "Av. Amazonas y Colón, Quito",
+            "celular_nuevo": "0987654321",
+        },
     }
-    resp_create = await client.post("/api/v1/solicitudes-derechos", json=sol_payload, headers=tenant_admin_auth_headers)
+    resp_create = await client.post(
+        "/api/v1/solicitudes-derechos", json=sol_payload, headers=tenant_admin_auth_headers
+    )
     assert resp_create.status_code == 201
     sol_data = resp_create.json()
     assert sol_data["codigo"].startswith("SOL-")
@@ -97,9 +102,7 @@ async def test_solicitud_derecho_full_lifecycle(
 
 
 @pytest.mark.asyncio
-async def test_solicitud_subsanacion_flow(
-    client: AsyncClient, tenant_admin_auth_headers: dict
-):
+async def test_solicitud_subsanacion_flow(client: AsyncClient, tenant_admin_auth_headers: dict):
     """Verifica el flujo de requerimiento de subsanación de 10 días al titular."""
     sol_payload = {
         "tipo_derecho": "eliminacion",
@@ -108,7 +111,9 @@ async def test_solicitud_subsanacion_flow(
         "titular_email": "paola.paredes@email.ec",
         "motivo_solicitud": "Quiero que borren mis datos.",
     }
-    resp = await client.post("/api/v1/solicitudes-derechos", json=sol_payload, headers=tenant_admin_auth_headers)
+    resp = await client.post(
+        "/api/v1/solicitudes-derechos", json=sol_payload, headers=tenant_admin_auth_headers
+    )
     solicitud_id = resp.json()["id"]
 
     sub_payload = {
@@ -126,11 +131,11 @@ async def test_solicitud_subsanacion_flow(
 
 
 @pytest.mark.asyncio
-async def test_resumen_sla_metrics(
-    client: AsyncClient, tenant_admin_auth_headers: dict
-):
+async def test_resumen_sla_metrics(client: AsyncClient, tenant_admin_auth_headers: dict):
     """Verifica que el endpoint de resumen SLA retorne las métricas cuantitativas."""
-    resp = await client.get("/api/v1/solicitudes-derechos/resumen-sla", headers=tenant_admin_auth_headers)
+    resp = await client.get(
+        "/api/v1/solicitudes-derechos/resumen-sla", headers=tenant_admin_auth_headers
+    )
     assert resp.status_code == 200
     data = resp.json()
     assert "total_solicitudes" in data

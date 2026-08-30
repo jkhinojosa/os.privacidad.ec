@@ -65,6 +65,7 @@ riesgo_medidas = Table(
 
 class RiesgoDimension(enum.StrEnum):
     """Dimensiones de seguridad de la información afectadas."""
+
     confidencialidad = "confidencialidad"
     integridad = "integridad"
     disponibilidad = "disponibilidad"
@@ -73,6 +74,7 @@ class RiesgoDimension(enum.StrEnum):
 
 class RiesgoNivel(enum.StrEnum):
     """Niveles de riesgo según la matriz de impacto y probabilidad."""
+
     bajo = "bajo"
     medio = "medio"
     alto = "alto"
@@ -81,6 +83,7 @@ class RiesgoNivel(enum.StrEnum):
 
 class RiesgoEstado(enum.StrEnum):
     """Estado del tratamiento del riesgo."""
+
     identificado = "identificado"
     en_tratamiento = "en_tratamiento"
     mitigado = "mitigado"
@@ -91,10 +94,9 @@ class Riesgo(Base, TimestampMixin):
     """
     Representa un escenario de riesgo que amenaza derechos y libertades de titulares.
     """
+
     __tablename__ = "riesgos"
-    __table_args__ = (
-        UniqueConstraint("tenant_id", "codigo", name="uq_riesgos_tenant_codigo"),
-    )
+    __table_args__ = (UniqueConstraint("tenant_id", "codigo", name="uq_riesgos_tenant_codigo"),)
 
     tenant_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
